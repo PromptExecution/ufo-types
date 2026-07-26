@@ -1,10 +1,10 @@
 [package]
 name = "ufo-types"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
+version = "0.10.1"
+edition = "2024"
+authors = ["Brian Horakh <brian@promptexecution.com>"]
+license = "MIT"
+repository = "https://github.com/PromptExecution/ufo-types"
 description = "UFO stereotypes, Satisfies<T> constraint trait, DARE proposal types, and ISO wrappers for the Tax-Lawyer platform + b00t governance"
 
 [dependencies]
@@ -15,6 +15,3 @@ thiserror = "2"
 
 [dev-dependencies]
 serde_json = "1.0"
-
-[lints]
-workspace = true
