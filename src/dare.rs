@@ -232,21 +232,12 @@ pub enum OodaStateMachineError {
 /// Each phase may have entry guards (must hold before entering) and
 /// exit guards (must hold before leaving). Guards are pure functions
 /// of the proposal state — no side effects.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct OodaGuards {
     /// Guards that must pass before exiting a phase.
     pub exit_guards: Vec<(OodaPhase, String)>,
     /// Guards that must pass before entering a phase.
     pub entry_guards: Vec<(OodaPhase, String)>,
-}
-
-impl Default for OodaGuards {
-    fn default() -> Self {
-        Self {
-            exit_guards: Vec::new(),
-            entry_guards: Vec::new(),
-        }
-    }
 }
 
 /// The OODA state machine — wraps a DaredDocument and enforces
