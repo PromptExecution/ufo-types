@@ -328,7 +328,7 @@ mod tests {
 
     #[test]
     fn ifrs9_all_three_variants_exist() {
-        let all = vec![
+        let all = [
             Ifrs9Classification::Fvpl,
             Ifrs9Classification::Fvoci,
             Ifrs9Classification::AmortizedCost,
