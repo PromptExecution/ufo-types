@@ -38,7 +38,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::satisfies::{IsoAuditable, Satisfies, SatisfiesResult};
+use crate::satisfies::{Constraint, IsoAuditable, Satisfies, SatisfiesResult};
 use crate::stereotype::{Stereotyped, UfoStereotype};
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -973,6 +973,8 @@ impl IsoAuditable for DaredAcceptanceCriteria {
     }
 }
 
+impl Constraint for DaredAcceptanceCriteria {}
+
 impl Satisfies<DaredAcceptanceCriteria> for DaredProposal {
     fn satisfies(&self, criteria: &DaredAcceptanceCriteria) -> SatisfiesResult {
         let mut issues = Vec::new();
@@ -1028,11 +1030,11 @@ impl Satisfies<DaredAcceptanceCriteria> for DaredProposal {
         let confidence = score / total;
 
         if (confidence - 1.0_f64).abs() < f64::EPSILON {
-            SatisfiesResult::satisfied(confidence)
+            SatisfiesResult::satisfied(confidence, vec![])
         } else if confidence > 0.0 {
-            SatisfiesResult::violated(issues.join("; "), confidence)
+            SatisfiesResult::violated(issues.join("; ")).with_confidence(confidence)
         } else {
-            SatisfiesResult::violated("all checks failed", confidence)
+            SatisfiesResult::violated("all checks failed").with_confidence(confidence)
         }
     }
 }
