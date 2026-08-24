@@ -20,6 +20,12 @@
 //! - **DARED proposal types** (`dare`): `Decision`, `Alternative`, `Risk`,
 //!   `ExecutiveDecision`, `OodaStateMachine` — a generic OODA state-change
 //!   proposal framework codified as Rust generics. Domain-generic.
+//! - **MBSE export** (`mbse`): `MbseExport` — renders any `Stereotyped`
+//!   type as a SysML v2 `part` usage, so evidence built from these types
+//!   (a `DaredProposal`, a `Decision`) doubles as a systems-engineering
+//!   model artifact. All of `dare`'s core types implement it; see
+//!   `mbse`'s module docs for the one-line pattern to extend it.
+//!   Domain-generic.
 //! - **ISO standard wrappers** (`iso`): `Lei` (ISO 17442), `Isin` (ISO
 //!   6166), `Currency` (ISO 4217 + common crypto tickers), `BankAccount`
 //!   (IBAN/BIC/LEI bundle), `FinancialInstrument` (IFRS 9). These ARE
@@ -96,6 +102,7 @@
 pub mod capability;
 pub mod dare;
 pub mod iso;
+pub mod mbse;
 pub mod satisfies;
 pub mod stereotype;
 #[cfg(feature = "sysml")]
@@ -113,6 +120,7 @@ pub use dare::{
     OodaStateMachineError, OodaTransition, Risk, RiskSeverity,
 };
 pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
+pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
