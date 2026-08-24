@@ -98,6 +98,8 @@ pub mod dare;
 pub mod iso;
 pub mod satisfies;
 pub mod stereotype;
+#[cfg(feature = "sysml")]
+pub mod sysml;
 
 // Re-export key types for convenience
 pub use capability::{
@@ -115,3 +117,5 @@ pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
 pub use stereotype::{Stereotyped, UfoCategory, UfoStereotype};
+#[cfg(feature = "sysml")]
+pub use sysml::{SysmlV2Syntax, validate_sysml_v2};
