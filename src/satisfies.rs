@@ -1,10 +1,19 @@
-//! `Satisfies<T>` trait — type-level constraint evaluation pattern.
+//! `Satisfies<C>` — uniform constraint satisfaction pattern.
 //!
-//! Mirrors what `evidence.rs` persists (`record_satisfies`) but at the Rust
-//! type level with deterministic results. Every domain type in the Tax-Lawyer
-//! platform implements `Satisfies<C>` for the constraints it must meet, and
-//! the `EvidenceBridge` helper auto-wires NS-9 (`record_is_a`) and NS-10
-//! (`record_audited_by`) calls.
+//! Every domain predicate (R&D eligibility, crypto cost basis rules, gate
+//! preconditions, etc.) implements the entity's own constraint type; every
+//! domain entity implements `Satisfies<C>` against the constraint types it
+//! must answer. Results are structured (`SatisfiesResult`) rather than a
+//! bare bool, so evaluations carry confidence and an audit-trail evidence
+//! chain.
+//!
+//! This is the crate's single canonical shape for this pattern — it was
+//! independently implemented twice (once here, once in `ledgrrr`'s vendored
+//! `crates/ufo-types`) against the same original spec (gh#511) and has since
+//! been reconciled: this module's `SatisfiesResult`/`Disposition`/`NodeId`
+//! shape and constructor signatures match what `ledger-core`/`ledgerr-mcp`
+//! already depend on at ~60 real call sites, so consolidating onto this
+//! module is a source change, not a behavior change, for that consumer.
 //!
 //! # Usage
 //! ```ignore
@@ -17,19 +26,29 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
 
-use crate::stereotype::UfoStereotype;
+use crate::stereotype::{Stereotyped, UfoStereotype};
+
+// ── Constraint marker ────────────────────────────────────────────────────────
+
+/// Marker for types that can act as a `Satisfies<C>` constraint.
+///
+/// `Satisfies<C>` itself does not require `C: Constraint` (some consumers —
+/// e.g. this crate's own `dare` module — evaluate constraints that don't
+/// need a `Send + Sync` bound). Implement this marker on your constraint
+/// type when you want that stronger guarantee (e.g. for use across an async
+/// MCP server boundary); it costs nothing to add and nothing to omit.
+pub trait Constraint: Send + Sync {}
 
 // ── Satisfies trait ──────────────────────────────────────────────────────────
 
 /// Evaluate whether `Self` satisfies the given constraint `C`.
 ///
-/// This is the core evaluation pattern for the Tax-Lawyer platform. Every
-/// domain type implements this for the constraints it must meet (e.g.,
-/// `AuRdActivity` satisfies `AuRdEligibility` under ITAA 1997 Div 355).
-///
-/// Implementors MUST produce deterministic results — the same inputs always
-/// produce the same `SatisfiesResult`.
+/// Every domain type implements this for the constraints it must meet
+/// (e.g., `AuRdActivity` satisfies `AuRdEligibility` under ITAA 1997 Div
+/// 355). Implementors MUST produce deterministic results — the same inputs
+/// always produce the same `SatisfiesResult`.
 pub trait Satisfies<C> {
     /// Evaluate this entity against the constraint, returning a structured
     /// result with disposition, confidence, and evidence node IDs.
@@ -38,97 +57,29 @@ pub trait Satisfies<C> {
 
 // ── Result types ─────────────────────────────────────────────────────────────
 
-/// The outcome of a `Satisfies<C>` evaluation.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct SatisfiesResult {
-    /// Whether the constraint was satisfied, violated, or undetermined.
-    pub disposition: Disposition,
-
-    /// Confidence in the evaluation [0.0, 1.0].
-    /// 1.0 = completely certain; 0.0 = purely speculative.
-    pub confidence: f64,
-
-    /// Blake3-hashed evidence node IDs from arc-kit-au.
-    /// These form the audit trail for ATO/IRS defense.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub evidence_nodes: Vec<NodeId>,
-
-    /// UFO stereotype for this evaluation result.
-    /// Always `Mode` — satisfying a constraint is an intrinsic property
-    /// of the entity, not a mediator between entities.
-    #[serde(default = "default_ufo_category")]
-    pub ufo_category: UfoStereotype,
-}
-
-fn default_ufo_category() -> UfoStereotype {
-    UfoStereotype::Mode("SatisfiesResult".into())
-}
-
-impl SatisfiesResult {
-    /// Create a satisfied result with the given confidence.
-    pub fn satisfied(confidence: f64) -> Self {
-        Self {
-            disposition: Disposition::Satisfied,
-            confidence,
-            evidence_nodes: Vec::new(),
-            ufo_category: UfoStereotype::Mode("SatisfiesResult".into()),
-        }
-    }
-
-    /// Create a violated result with a reason and confidence.
-    pub fn violated(reason: impl Into<String>, confidence: f64) -> Self {
-        Self {
-            disposition: Disposition::Violated {
-                reason: reason.into(),
-            },
-            confidence,
-            evidence_nodes: Vec::new(),
-            ufo_category: UfoStereotype::Mode("SatisfiesResult".into()),
-        }
-    }
-
-    /// Create an unknown result — evaluation could not be completed.
-    pub fn unknown(confidence: f64) -> Self {
-        Self {
-            disposition: Disposition::Unknown,
-            confidence,
-            evidence_nodes: Vec::new(),
-            ufo_category: UfoStereotype::Mode("SatisfiesResult".into()),
-        }
-    }
-
-    /// Attach evidence node IDs (Blake3 hashes) for audit trail.
-    pub fn with_evidence(mut self, nodes: Vec<NodeId>) -> Self {
-        self.evidence_nodes = nodes;
-        self
-    }
-
-    /// Returns true if the constraint is satisfied.
-    pub fn is_satisfied(&self) -> bool {
-        matches!(self.disposition, Disposition::Satisfied)
-    }
-
-    /// Returns true if the constraint is violated.
-    pub fn is_violated(&self) -> bool {
-        matches!(self.disposition, Disposition::Violated { .. })
-    }
-}
-
-/// The disposition (outcome) of a constraint evaluation.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+/// The outcome of a constraint evaluation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Disposition {
-    /// Constraint is fully satisfied.
+    /// All criteria met.
     Satisfied,
-
-    /// Constraint is violated, with a human-readable reason.
-    #[serde(rename = "violated")]
+    /// One or more criteria failed; reason is human-readable.
     Violated {
         /// Why the constraint was violated (e.g., "activity_type is not Core")
         reason: String,
     },
-
-    /// Evaluation could not be completed — insufficient data, ambiguous inputs.
+    /// Insufficient evidence to determine satisfaction.
     Unknown,
+}
+
+impl Disposition {
+    pub fn is_satisfied(&self) -> bool {
+        matches!(self, Disposition::Satisfied)
+    }
+
+    pub fn is_violated(&self) -> bool {
+        matches!(self, Disposition::Violated { .. })
+    }
 }
 
 impl std::fmt::Display for Disposition {
@@ -141,22 +92,21 @@ impl std::fmt::Display for Disposition {
     }
 }
 
-// ── NodeId — Blake3 evidence node identifier ─────────────────────────────────
-
-/// A Blake3 evidence node ID from the arc-kit-au evidence graph.
+/// Opaque evidence-graph node identifier.
 ///
-/// Wraps a hex-encoded Blake3 hash that uniquely identifies an evidence
-/// node in the provenance chain.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub struct NodeId(pub String);
+/// Format matches arc-kit-au NodeId: `{type_prefix}:{blake3_hex}`. Using a
+/// newtype here keeps ufo-types free of an arc-kit-au dependency; callers
+/// convert between the two as needed.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+pub struct NodeId(String);
 
 impl NodeId {
-    /// Create a new NodeId from a hex Blake3 hash.
-    pub fn new(hash: impl Into<String>) -> Self {
-        Self(hash.into())
+    /// Create a new NodeId from an already-formatted evidence-graph id.
+    pub fn new(s: impl Into<String>) -> Self {
+        Self(s.into())
     }
 
-    /// Return the hex hash string.
+    /// Return the id as a string slice.
     pub fn as_str(&self) -> &str {
         &self.0
     }
@@ -164,7 +114,7 @@ impl NodeId {
 
 impl std::fmt::Display for NodeId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "NodeId({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -180,14 +130,96 @@ impl From<String> for NodeId {
     }
 }
 
-// ── Evidence bridge traits ───────────────────────────────────────────────────
+fn default_ufo_category() -> UfoStereotype {
+    UfoStereotype::Mode("SatisfiesResult".into())
+}
 
-use crate::stereotype::Stereotyped;
+/// Structured result of `Satisfies::satisfies`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct SatisfiesResult {
+    /// Pass / fail / unknown verdict.
+    pub disposition: Disposition,
+    /// Confidence in the verdict `[0.0, 1.0]`. `1.0` = completely certain;
+    /// `0.0` = purely speculative or not evaluated.
+    pub confidence: f64,
+    /// Evidence graph nodes that support or contradict this verdict.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence_nodes: Vec<NodeId>,
+    /// UFO stereotype that best describes this satisfaction relation.
+    /// Defaults to `Mode("SatisfiesResult")` — satisfying a constraint is
+    /// ordinarily an intrinsic property of the entity, not a mediator
+    /// between entities.
+    #[serde(default = "default_ufo_category")]
+    pub ufo_category: UfoStereotype,
+}
+
+impl SatisfiesResult {
+    /// Create a satisfied result with the given confidence and evidence.
+    pub fn satisfied(confidence: f64, evidence_nodes: Vec<NodeId>) -> Self {
+        Self {
+            disposition: Disposition::Satisfied,
+            confidence,
+            evidence_nodes,
+            ufo_category: default_ufo_category(),
+        }
+    }
+
+    /// Create a violated result with a reason. Confidence defaults to 0.0;
+    /// use the struct literal directly if a violated result needs a
+    /// non-zero confidence.
+    pub fn violated(reason: impl Into<String>) -> Self {
+        Self {
+            disposition: Disposition::Violated {
+                reason: reason.into(),
+            },
+            confidence: 0.0,
+            evidence_nodes: Vec::new(),
+            ufo_category: default_ufo_category(),
+        }
+    }
+
+    /// Create an unknown result — evaluation could not be completed.
+    pub fn unknown() -> Self {
+        Self {
+            disposition: Disposition::Unknown,
+            confidence: 0.0,
+            evidence_nodes: Vec::new(),
+            ufo_category: default_ufo_category(),
+        }
+    }
+
+    /// Attach evidence node IDs after construction.
+    pub fn with_evidence(mut self, nodes: Vec<NodeId>) -> Self {
+        self.evidence_nodes = nodes;
+        self
+    }
+
+    /// Override the confidence after construction — useful for a partial
+    /// `violated()`/`unknown()` result where the caller has a real,
+    /// non-zero confidence score to report (e.g. "3 of 4 criteria met").
+    pub fn with_confidence(mut self, confidence: f64) -> Self {
+        self.confidence = confidence;
+        self
+    }
+
+    /// Returns true if the constraint is satisfied.
+    pub fn is_satisfied(&self) -> bool {
+        self.disposition.is_satisfied()
+    }
+
+    /// Returns true if the constraint is violated.
+    pub fn is_violated(&self) -> bool {
+        self.disposition.is_violated()
+    }
+}
+
+// ── Evidence bridge traits ───────────────────────────────────────────────────
 
 /// A domain constraint that can report which ISO standard(s) it embodies.
 ///
-/// Implemented by constraint types (e.g., `AuRdEligibility`, `UsRdcFourPartTest`)
-/// so that domain `Satisfies` impls can auto-call `record_audited_by()` (NS-10).
+/// Implemented by constraint types (e.g., `AuRdEligibility`,
+/// `UsRdcFourPartTest`) so that domain `Satisfies` impls can auto-call
+/// `record_audited_by()` (NS-10).
 pub trait IsoAuditable {
     /// ISO standard identifier(s) that govern this constraint.
     ///
@@ -204,57 +236,15 @@ pub trait IsoAuditable {
 /// this to produce a `SatisfiesResult` while also recording:
 /// - NS-9: `record_is_a(subject, stereotype)` for ontological provenance
 /// - NS-10: `record_audited_by(subject, iso_standard)` for compliance
-///
-/// # Example
-/// ```ignore
-/// pub struct AuRdActivity { pub activity_id: String, /* ... */ }
-///
-/// impl Satisfies<AuRdEligibility> for AuRdActivity {
-///     fn satisfies(&self, _c: &AuRdEligibility) -> SatisfiesResult {
-///         SatisfiesResult::satisfied(0.95)
-///     }
-/// }
-///
-/// impl Stereotyped for AuRdActivity {
-///     fn ufo_stereotype(&self) -> UfoStereotype {
-///         UfoStereotype::SubKind {
-///             name: "AuRdActivity".into(),
-///             parent: "Activity".into(),
-///         }
-///     }
-/// }
-///
-/// impl IsoAuditable for AuRdEligibility {
-///     fn iso_standard_ids(&self) -> Vec<String> {
-///         vec!["ITAA 1997 Div 355".into()]
-///     }
-/// }
-///
-/// // Bridge — record evidence:
-/// let activity = AuRdActivity::new();
-/// let constraint = AuRdEligibility::new(2025);
-/// let result = EvidenceBridge::evaluate_and_record(
-///     &activity,
-///     &constraint,
-///     activity.activity_id(),
-/// );
-/// // Internally calls:
-/// //   1. activity.satisfies(&constraint)
-/// //   2. record_is_a(activity_id, activity.ufo_stereotype().to_string())
-/// //   3. record_audited_by(activity_id, constraint.iso_standard_ids())
-/// ```
 pub struct EvidenceBridge;
 
 impl EvidenceBridge {
     /// Evaluate `satisfies()` and produce the stereotype + ISO labels needed
     /// for evidence recording, without actually calling the evidence layer.
     ///
-    /// Returns `(SatisfiesResult, ufo_stereotype_label, iso_standard_ids)`
-    /// so the caller can pass them to `record_is_a()` and `record_audited_by()`.
-    pub fn evaluate<E, C>(
-        entity: &E,
-        constraint: &C,
-    ) -> (SatisfiesResult, UfoStereotype, Vec<String>)
+    /// Returns `(SatisfiesResult, ufo_stereotype, iso_standard_ids)` so the
+    /// caller can pass them to `record_is_a()` and `record_audited_by()`.
+    pub fn evaluate<E, C>(entity: &E, constraint: &C) -> (SatisfiesResult, UfoStereotype, Vec<String>)
     where
         E: Satisfies<C> + Stereotyped,
         C: IsoAuditable,
@@ -272,32 +262,45 @@ mod tests {
 
     // ── Test domain types ─────────────────────────────────────────────────
 
-    /// Example constraint: a company must have a valid LEI.
+    struct AlwaysSatisfied;
+    impl Constraint for AlwaysSatisfied {}
+
+    struct AlwaysViolated;
+    impl Constraint for AlwaysViolated {}
+
+    struct Subject;
+    impl Satisfies<AlwaysSatisfied> for Subject {
+        fn satisfies(&self, _: &AlwaysSatisfied) -> SatisfiesResult {
+            SatisfiesResult::satisfied(1.0, vec![NodeId::new("doc:abc")])
+        }
+    }
+    impl Satisfies<AlwaysViolated> for Subject {
+        fn satisfies(&self, _: &AlwaysViolated) -> SatisfiesResult {
+            SatisfiesResult::violated("intentionally violated")
+        }
+    }
+
     #[derive(Debug)]
     struct LeiRequired;
-
     impl IsoAuditable for LeiRequired {
         fn iso_standard_ids(&self) -> Vec<String> {
             vec!["ISO 17442".into()]
         }
     }
 
-    /// Example domain entity: a company.
     #[derive(Debug)]
     struct TestCompany {
         has_valid_lei: bool,
     }
-
     impl Satisfies<LeiRequired> for TestCompany {
         fn satisfies(&self, _c: &LeiRequired) -> SatisfiesResult {
             if self.has_valid_lei {
-                SatisfiesResult::satisfied(0.99)
+                SatisfiesResult::satisfied(0.99, vec![])
             } else {
-                SatisfiesResult::violated("Missing or invalid LEI", 1.0)
+                SatisfiesResult::violated("Missing or invalid LEI")
             }
         }
     }
-
     impl Stereotyped for TestCompany {
         fn ufo_stereotype(&self) -> UfoStereotype {
             UfoStereotype::Kind("Company".into())
@@ -307,95 +310,53 @@ mod tests {
     // ── Tests ─────────────────────────────────────────────────────────────
 
     #[test]
-    fn satisfies_result_satisfied() {
-        let r = SatisfiesResult::satisfied(0.95);
-        assert!(r.is_satisfied());
-        assert!(!r.is_violated());
-        assert_eq!(r.confidence, 0.95);
+    fn satisfied_result() {
+        let r = Subject.satisfies(&AlwaysSatisfied);
+        assert!(r.disposition.is_satisfied());
+        assert_eq!(r.confidence, 1.0);
+        assert_eq!(r.evidence_nodes.len(), 1);
     }
 
     #[test]
-    fn satisfies_result_violated() {
-        let r = SatisfiesResult::violated("no LEI", 1.0);
-        assert!(!r.is_satisfied());
-        assert!(r.is_violated());
-        match &r.disposition {
-            Disposition::Violated { reason } => assert_eq!(reason, "no LEI"),
-            _ => panic!("expected Violated"),
-        }
+    fn violated_result() {
+        let r = Subject.satisfies(&AlwaysViolated);
+        assert!(!r.disposition.is_satisfied());
+        assert_eq!(r.confidence, 0.0);
+        assert!(matches!(r.disposition, Disposition::Violated { .. }));
     }
 
     #[test]
-    fn satisfies_result_unknown() {
-        let r = SatisfiesResult::unknown(0.3);
-        assert!(!r.is_satisfied());
-        assert!(!r.is_violated());
-        assert_eq!(r.confidence, 0.3);
-    }
-
-    #[test]
-    fn satisfies_result_with_evidence() {
-        let nodes = vec![NodeId::new("abc123"), NodeId::new("def456")];
-        let r = SatisfiesResult::satisfied(0.8).with_evidence(nodes.clone());
-        assert_eq!(r.evidence_nodes, nodes);
+    fn unknown_result_roundtrip() {
+        let r = SatisfiesResult::unknown();
+        let json = serde_json::to_string(&r).unwrap();
+        let back: SatisfiesResult = serde_json::from_str(&json).unwrap();
+        assert!(matches!(back.disposition, Disposition::Unknown));
     }
 
     #[test]
     fn disposition_display() {
         assert_eq!(Disposition::Satisfied.to_string(), "Satisfied");
         assert_eq!(
-            Disposition::Violated {
-                reason: "no LEI".into()
-            }
-            .to_string(),
+            Disposition::Violated { reason: "no LEI".into() }.to_string(),
             "Violated(no LEI)"
         );
         assert_eq!(Disposition::Unknown.to_string(), "Unknown");
     }
 
     #[test]
-    fn satisfies_result_roundtrips_json() {
-        let r = SatisfiesResult {
-            disposition: Disposition::Satisfied,
-            confidence: 0.87,
-            evidence_nodes: vec![NodeId::new("hash1")],
-            ufo_category: UfoStereotype::Mode("TestResult".into()),
-        };
-        let json = serde_json::to_string(&r).unwrap();
-        let back: SatisfiesResult = serde_json::from_str(&json).unwrap();
-        assert_eq!(r.disposition, back.disposition);
-        assert_eq!(r.confidence, back.confidence);
-        assert_eq!(r.evidence_nodes, back.evidence_nodes);
+    fn disposition_internally_tagged_wire_format() {
+        // ledger-core's already-deployed shape: {"type":"satisfied"} not "Satisfied".
+        let json = serde_json::to_string(&Disposition::Satisfied).unwrap();
+        assert_eq!(json, r#"{"type":"satisfied"}"#);
+        let json = serde_json::to_string(&Disposition::Violated { reason: "x".into() }).unwrap();
+        assert_eq!(json, r#"{"type":"violated","reason":"x"}"#);
     }
 
     #[test]
-    fn trait_satisfies_compiles_and_works() {
-        let company = TestCompany {
-            has_valid_lei: true,
-        };
-        let result = company.satisfies(&LeiRequired);
-        assert!(result.is_satisfied());
-    }
-
-    #[test]
-    fn trait_satisfies_violated_works() {
-        let company = TestCompany {
-            has_valid_lei: false,
-        };
-        let result = company.satisfies(&LeiRequired);
-        assert!(result.is_violated());
-    }
-
-    #[test]
-    fn evidence_bridge_produces_labels() {
-        let company = TestCompany {
-            has_valid_lei: true,
-        };
-        let constraint = LeiRequired;
-        let (result, stereotype, iso_ids) = EvidenceBridge::evaluate(&company, &constraint);
-        assert!(result.is_satisfied());
-        assert_eq!(stereotype.to_string(), "Kind:Company");
-        assert_eq!(iso_ids, vec!["ISO 17442"]);
+    fn satisfies_result_with_evidence() {
+        let nodes = vec![NodeId::new("abc123"), NodeId::new("def456")];
+        let r = SatisfiesResult::satisfied(0.8, vec![]).with_evidence(nodes.clone());
+        assert_eq!(r.evidence_nodes, nodes);
     }
 
     #[test]
@@ -408,14 +369,24 @@ mod tests {
     }
 
     #[test]
-    fn node_id_display() {
-        let n = NodeId::new("hash1");
-        assert_eq!(n.to_string(), "NodeId(hash1)");
+    fn node_id_display_is_bare() {
+        let n = NodeId::new("doc:abc123");
+        assert_eq!(n.to_string(), "doc:abc123");
     }
 
     #[test]
     fn node_id_from_str() {
         let n: NodeId = "test".into();
         assert_eq!(n.as_str(), "test");
+    }
+
+    #[test]
+    fn evidence_bridge_produces_labels() {
+        let company = TestCompany { has_valid_lei: true };
+        let constraint = LeiRequired;
+        let (result, stereotype, iso_ids) = EvidenceBridge::evaluate(&company, &constraint);
+        assert!(result.is_satisfied());
+        assert_eq!(stereotype.to_string(), "Kind:Company");
+        assert_eq!(iso_ids, vec!["ISO 17442"]);
     }
 }

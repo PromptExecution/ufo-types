@@ -38,7 +38,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::satisfies::{IsoAuditable, Satisfies, SatisfiesResult};
+use crate::mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
+use crate::satisfies::{Constraint, IsoAuditable, Satisfies, SatisfiesResult};
 use crate::stereotype::{Stereotyped, UfoStereotype};
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -575,6 +576,12 @@ impl Stereotyped for Decision {
     }
 }
 
+impl MbseExport for Decision {
+    fn to_sysml_v2(&self) -> String {
+        mbse_field_dump(&self.ufo_stereotype(), "Decision", self)
+    }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Alternative — Abstract (Kind → Endurant, counterfactual)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -594,6 +601,14 @@ pub struct Alternative {
 impl Stereotyped for Alternative {
     fn ufo_stereotype(&self) -> UfoStereotype {
         UfoStereotype::Kind("Alternative".into())
+    }
+}
+
+impl MbseExport for Alternative {
+    fn to_sysml_v2(&self) -> String {
+        // Named by `name`, not the type, so siblings inside a proposal's
+        // export don't collide on a shared "Alternative" identifier.
+        mbse_field_dump(&self.ufo_stereotype(), &sanitize_ident(&self.name), self)
     }
 }
 
@@ -646,6 +661,14 @@ impl Stereotyped for Risk {
     }
 }
 
+impl MbseExport for Risk {
+    fn to_sysml_v2(&self) -> String {
+        // Named by `name`, not the type, so siblings inside a proposal's
+        // export don't collide on a shared "Risk" identifier.
+        mbse_field_dump(&self.ufo_stereotype(), &sanitize_ident(&self.name), self)
+    }
+}
+
 impl IsoAuditable for Risk {
     fn iso_standard_ids(&self) -> Vec<String> {
         vec!["ISO 31000:2018".into()]
@@ -688,6 +711,12 @@ pub struct ExecutiveDecision {
 impl Stereotyped for ExecutiveDecision {
     fn ufo_stereotype(&self) -> UfoStereotype {
         UfoStereotype::Relator("ExecutiveDecision".into())
+    }
+}
+
+impl MbseExport for ExecutiveDecision {
+    fn to_sysml_v2(&self) -> String {
+        mbse_field_dump(&self.ufo_stereotype(), "ExecutiveDecision", self)
     }
 }
 
@@ -901,6 +930,37 @@ impl Stereotyped for DaredProposal {
     }
 }
 
+impl MbseExport for DaredProposal {
+    /// Unlike the leaf DARED types, a proposal *composes* other
+    /// `Stereotyped` values — so instead of a flat field dump, this nests
+    /// each child's own `to_sysml_v2()` output as a real SysML v2 part
+    /// inside the proposal's part, mirroring the actual containment
+    /// (`DaredProposal` mediates `Decision` + `Alternative`s + `Risk`s +
+    /// `ExecutiveDecision`, per this module's UFO grounding table above).
+    fn to_sysml_v2(&self) -> String {
+        let mut body = format!(
+            "    attribute proposal_id : ScalarValues::String = {:?};\n    attribute title : ScalarValues::String = {:?};\n    attribute phase : ScalarValues::String = {:?};\n",
+            self.proposal_id,
+            self.title,
+            format!("{:?}", self.phase),
+        );
+        body.push_str(&indent_block(&self.decision.to_sysml_v2()));
+        for alt in &self.alternatives {
+            body.push_str(&indent_block(&alt.to_sysml_v2()));
+        }
+        for risk in &self.risks {
+            body.push_str(&indent_block(&risk.to_sysml_v2()));
+        }
+        body.push_str(&indent_block(&self.executive_decision.to_sysml_v2()));
+
+        format!(
+            "// {}\npart {} {{\n{body}}}\n",
+            self.ufo_stereotype(),
+            sanitize_ident(&self.proposal_id),
+        )
+    }
+}
+
 impl DaredDocument for DaredProposal {
     fn decision(&self) -> &Decision {
         &self.decision
@@ -973,6 +1033,8 @@ impl IsoAuditable for DaredAcceptanceCriteria {
     }
 }
 
+impl Constraint for DaredAcceptanceCriteria {}
+
 impl Satisfies<DaredAcceptanceCriteria> for DaredProposal {
     fn satisfies(&self, criteria: &DaredAcceptanceCriteria) -> SatisfiesResult {
         let mut issues = Vec::new();
@@ -1028,11 +1090,11 @@ impl Satisfies<DaredAcceptanceCriteria> for DaredProposal {
         let confidence = score / total;
 
         if (confidence - 1.0_f64).abs() < f64::EPSILON {
-            SatisfiesResult::satisfied(confidence)
+            SatisfiesResult::satisfied(confidence, vec![])
         } else if confidence > 0.0 {
-            SatisfiesResult::violated(issues.join("; "), confidence)
+            SatisfiesResult::violated(issues.join("; ")).with_confidence(confidence)
         } else {
-            SatisfiesResult::violated("all checks failed", confidence)
+            SatisfiesResult::violated("all checks failed").with_confidence(confidence)
         }
     }
 }
@@ -1478,5 +1540,58 @@ mod tests {
             result.unwrap_err(),
             OodaStateMachineError::InvalidTransition { .. }
         ));
+    }
+
+    // ── MBSE export ──
+
+    #[test]
+    fn decision_sysml_v2_carries_stereotype_and_fields() {
+        let text = sample_decision().to_sysml_v2();
+        assert!(text.starts_with("// Kind:Decision\n"));
+        assert!(text.contains("part Decision {"));
+        assert!(text.contains(r#"attribute what : ScalarValues::String = "Adopt josh for vendor submodules";"#));
+        // `scope` is `Vec<String>`, so it carries real `[0..*]` multiplicity now
+        // rather than masquerading as a single scalar value.
+        assert!(text.contains(r#"attribute scope : ScalarValues::String[0..*] = ("vendor/");"#));
+    }
+
+    #[test]
+    fn alternative_and_risk_sysml_v2_use_name_as_part_identifier() {
+        let alt = sample_alternative("do-nothing", "zero cost", "doesn't solve");
+        assert!(alt.to_sysml_v2().contains("part do_nothing {"));
+
+        let risk = sample_risk("josh maturity", RiskSeverity::High, "pin to known-good SHA");
+        assert!(risk.to_sysml_v2().contains("part josh_maturity {"));
+        assert!(risk.to_sysml_v2().contains(r#"attribute severity : ScalarValues::String = "High";"#));
+    }
+
+    #[test]
+    fn dared_proposal_sysml_v2_nests_every_section() {
+        let text = valid_proposal().to_sysml_v2();
+        assert!(text.starts_with("// Relator:DaredProposal\n"));
+        assert!(text.contains("part DARED_001 {"));
+        assert!(text.contains(r#"attribute proposal_id : ScalarValues::String = "DARED-001";"#));
+        // Every DARED section is nested as a real part, not flattened.
+        assert!(text.contains("// Kind:Decision"));
+        assert!(text.contains("part do_nothing {"));
+        assert!(text.contains("part josh_maturity {"));
+        assert!(text.contains("// Relator:ExecutiveDecision"));
+        // Nesting is real indentation, not a flat concatenation.
+        assert!(text.contains("    // Kind:Decision\n    part Decision {"));
+    }
+
+    #[cfg(feature = "sysml")]
+    #[test]
+    fn dared_proposal_sysml_v2_is_syntactically_valid() {
+        use crate::sysml::validate_sysml_v2;
+
+        let text = valid_proposal().to_sysml_v2();
+        let wrapped = format!("package DaredExport {{\n{}}}\n", indent_block(&text));
+        let result = validate_sysml_v2(&wrapped);
+        assert!(
+            result.disposition.is_satisfied(),
+            "generated SysML v2 failed to parse: {:?}\n\n{wrapped}",
+            result.disposition
+        );
     }
 }

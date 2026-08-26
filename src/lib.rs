@@ -5,9 +5,11 @@
 //! that wants ontologically-grounded types with deterministic, audit-ready
 //! constraint evaluation. It defines:
 //!
-//! - **UFO stereotypes** (`stereotype`): `UfoStereotype` enum grounding
-//!   every domain type in Guizzardi's Unified Foundational Ontology.
-//!   Domain-generic — nothing here is specific to any one consumer.
+//! - **UFO stereotypes** (`stereotype`): `UfoStereotype` (every
+//!   endurant/perdurant/moment substereotype from Guizzardi 2005, each
+//!   carrying its own name) + `UfoCategory` (the top-level Endurant /
+//!   Perdurant / Moment / Abstract classification, derivable from any
+//!   stereotype via `.category()`). Domain-generic.
 //! - **Satisfies<C> trait** (`satisfies`): The core constraint evaluation
 //!   pattern — any domain type can implement `Satisfies<Constraint>` with
 //!   deterministic, audit-ready results. Domain-generic.
@@ -18,17 +20,42 @@
 //! - **DARED proposal types** (`dare`): `Decision`, `Alternative`, `Risk`,
 //!   `ExecutiveDecision`, `OodaStateMachine` — a generic OODA state-change
 //!   proposal framework codified as Rust generics. Domain-generic.
-//! - **ISO standard wrappers** (`iso`): `Lei` (ISO 17442 Legal Entity
-//!   Identifier), `Iso4217` currency codes, and `Ifrs9Classification`
-//!   financial-instrument types. These ARE domain-specific — they encode
-//!   financial/legal-entity accounting standards and are only meaningful to
-//!   consumers working in that space (e.g. Tax-Lawyer). Not intended as a
-//!   generic building block for unrelated domains.
+//! - **MBSE export** (`mbse`): `MbseExport` — renders any `Stereotyped`
+//!   type as a SysML v2 `part` usage, so evidence built from these types
+//!   (a `DaredProposal`, a `Decision`) doubles as a systems-engineering
+//!   model artifact. All of `dare`'s core types implement it; see
+//!   `mbse`'s module docs for the one-line pattern to extend it.
+//!   Domain-generic.
+//! - **ISO standard wrappers** (`iso`): `Lei` (ISO 17442), `Isin` (ISO
+//!   6166), `Currency` (ISO 4217 + common crypto tickers), `BankAccount`
+//!   (IBAN/BIC/LEI bundle), `FinancialInstrument` (IFRS 9). These ARE
+//!   domain-specific — they encode financial/legal-entity accounting
+//!   standards and are only meaningful to consumers working in that space
+//!   (e.g. Tax-Lawyer, `ledgrrr`). Not intended as a generic building block
+//!   for unrelated domains.
 //!
-//! Any b00t-ecosystem project needing UFO-grounded domain
-//! types and the `Satisfies<T>` pattern (e.g. `stereotype`, `satisfies`,
-//! `capability`, `dare`) can depend on it directly. Only `iso` carries
-//! genuinely finance/tax-domain-specific types.
+//! Any b00t-ecosystem project needing UFO-grounded domain types and the
+//! `Satisfies<T>` pattern (e.g. `stereotype`, `satisfies`, `capability`,
+//! `dare`) can depend on it directly. Only `iso` carries genuinely
+//! finance/tax-domain-specific types.
+//!
+//! ## Single source of truth
+//!
+//! `stereotype`/`satisfies`/`iso` were independently implemented twice
+//! against the same original spec (gh#511) — once here (feeding `b00t-cli`,
+//! `b00t-c0re-lib`, `b00t-lib-chat`, and cim-gridy's `mission-engine`) and
+//! once in `ledgrrr`'s vendored `crates/ufo-types` (feeding `ledger-core`
+//! and `ledgerr-mcp`). They have since been reconciled onto this crate:
+//! `UfoStereotype` gained `ledgrrr`'s missing endurant/perdurant
+//! substereotypes plus a `.category()` method (existing variants and
+//! `Display` output unchanged — no consumer needed to change), and
+//! `satisfies`/`iso` adopted `ledgrrr`'s exact `SatisfiesResult`/
+//! `Disposition`/`NodeId`/`Lei`/`Currency`/`BankAccount`/
+//! `FinancialInstrument` shapes (the ones with real production call sites),
+//! superseding this crate's own former `Iso4217`/`Ifrs9Classification`
+//! (zero external consumers, same ground now covered by
+//! `Currency`/`FinancialInstrument`). `ledgrrr`'s vendored copy is retired
+//! in favor of depending on this crate directly.
 //!
 //! ## Architecture
 //!
@@ -59,7 +86,9 @@
 //! - Guizzardi, G. (2005). _Ontological Foundations for Structural
 //!   Conceptual Models_. PhD Thesis, University of Twente.
 //! - ISO 17442:2012 — Legal Entity Identifier (LEI) (`iso` module only)
+//! - ISO 6166:2021 — International Securities Identification Number (ISIN) (`iso` module only)
 //! - ISO 4217:2015 — Codes for the representation of currencies (`iso` module only)
+//! - ISO 13616 / ISO 9362 — IBAN / BIC (`iso` module only)
 //! - IFRS 9 — Financial Instruments (IASB, 2014) (`iso` module only)
 //!
 //! The following references are specific to the Tax-Lawyer consumer and its
@@ -73,8 +102,11 @@
 pub mod capability;
 pub mod dare;
 pub mod iso;
+pub mod mbse;
 pub mod satisfies;
 pub mod stereotype;
+#[cfg(feature = "sysml")]
+pub mod sysml;
 
 // Re-export key types for convenience
 pub use capability::{
@@ -87,8 +119,11 @@ pub use dare::{
     Decision, ExecutiveDecision, OodaEvent, OodaGuards, OodaPhase, OodaStateMachine,
     OodaStateMachineError, OodaTransition, Risk, RiskSeverity,
 };
-pub use iso::{Ifrs9Classification, Iso4217, Iso4217Error, Lei, LeiError};
+pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
+pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use satisfies::{
-    Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
+    Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
-pub use stereotype::{Stereotyped, UfoStereotype};
+pub use stereotype::{Stereotyped, UfoCategory, UfoStereotype};
+#[cfg(feature = "sysml")]
+pub use sysml::{SysmlV2Syntax, validate_sysml_v2};
