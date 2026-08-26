@@ -1550,7 +1550,9 @@ mod tests {
         assert!(text.starts_with("// Kind:Decision\n"));
         assert!(text.contains("part Decision {"));
         assert!(text.contains(r#"attribute what : ScalarValues::String = "Adopt josh for vendor submodules";"#));
-        assert!(text.contains(r#"attribute scope : ScalarValues::String = "vendor/";"#));
+        // `scope` is `Vec<String>`, so it carries real `[0..*]` multiplicity now
+        // rather than masquerading as a single scalar value.
+        assert!(text.contains(r#"attribute scope : ScalarValues::String[0..*] = ("vendor/");"#));
     }
 
     #[test]
