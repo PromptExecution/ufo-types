@@ -8,6 +8,9 @@ license = "MIT"
 repository = "https://github.com/PromptExecution/ufo-types"
 description = "UFO stereotypes, Satisfies<T> constraint trait, DARE proposal types, and ISO wrappers for the Tax-Lawyer platform + b00t governance"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -18,9 +21,15 @@ schemars = { version = "0.8", features = ["derive"] }
 # than a default feature — consumers that don't need SysML v2 syntax
 # validation (most of them) don't pay for it.
 sysml-v2-parser = { version = "0.54", optional = true }
+# Optional PyO3 binding (P3, `elasticdotventures/_b00t_#1177`) — cross-runtime
+# validation: the same Rust-owned `validate_sysml_v2` callable identically
+# from Python, following common-core/critter-keeper's proven pyo3+maturin
+# pattern (`src/python.rs`, `#[pymodule] fn _core`).
+pyo3 = { version = "0.27", features = ["extension-module"], optional = true }
 
 [features]
 sysml = ["dep:sysml-v2-parser"]
+python = ["dep:pyo3", "sysml"]
 
 [dev-dependencies]
 serde_json = "1.0"

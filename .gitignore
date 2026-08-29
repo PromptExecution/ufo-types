@@ -1,2 +1,11 @@
 /target
 Cargo.lock
+
+# Python (maturin/pyo3 binding, P3)
+.venv/
+dist/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+python/ufo_types/*.so
+python/ufo_types/*.pyd
