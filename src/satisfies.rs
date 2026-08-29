@@ -25,8 +25,8 @@
 //! assert!(matches!(result.disposition, Disposition::Satisfied));
 //! ```
 
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 use crate::stereotype::{Stereotyped, UfoStereotype};
 
@@ -244,7 +244,10 @@ impl EvidenceBridge {
     ///
     /// Returns `(SatisfiesResult, ufo_stereotype, iso_standard_ids)` so the
     /// caller can pass them to `record_is_a()` and `record_audited_by()`.
-    pub fn evaluate<E, C>(entity: &E, constraint: &C) -> (SatisfiesResult, UfoStereotype, Vec<String>)
+    pub fn evaluate<E, C>(
+        entity: &E,
+        constraint: &C,
+    ) -> (SatisfiesResult, UfoStereotype, Vec<String>)
     where
         E: Satisfies<C> + Stereotyped,
         C: IsoAuditable,
@@ -337,7 +340,10 @@ mod tests {
     fn disposition_display() {
         assert_eq!(Disposition::Satisfied.to_string(), "Satisfied");
         assert_eq!(
-            Disposition::Violated { reason: "no LEI".into() }.to_string(),
+            Disposition::Violated {
+                reason: "no LEI".into()
+            }
+            .to_string(),
             "Violated(no LEI)"
         );
         assert_eq!(Disposition::Unknown.to_string(), "Unknown");
@@ -382,7 +388,9 @@ mod tests {
 
     #[test]
     fn evidence_bridge_produces_labels() {
-        let company = TestCompany { has_valid_lei: true };
+        let company = TestCompany {
+            has_valid_lei: true,
+        };
         let constraint = LeiRequired;
         let (result, stereotype, iso_ids) = EvidenceBridge::evaluate(&company, &constraint);
         assert!(result.is_satisfied());

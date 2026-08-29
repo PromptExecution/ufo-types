@@ -1549,7 +1549,9 @@ mod tests {
         let text = sample_decision().to_sysml_v2();
         assert!(text.starts_with("// Kind:Decision\n"));
         assert!(text.contains("part Decision {"));
-        assert!(text.contains(r#"attribute what : ScalarValues::String = "Adopt josh for vendor submodules";"#));
+        assert!(text.contains(
+            r#"attribute what : ScalarValues::String = "Adopt josh for vendor submodules";"#
+        ));
         // `scope` is `Vec<String>`, so it carries real `[0..*]` multiplicity now
         // rather than masquerading as a single scalar value.
         assert!(text.contains(r#"attribute scope : ScalarValues::String[0..*] = ("vendor/");"#));
@@ -1562,7 +1564,10 @@ mod tests {
 
         let risk = sample_risk("josh maturity", RiskSeverity::High, "pin to known-good SHA");
         assert!(risk.to_sysml_v2().contains("part josh_maturity {"));
-        assert!(risk.to_sysml_v2().contains(r#"attribute severity : ScalarValues::String = "High";"#));
+        assert!(
+            risk.to_sysml_v2()
+                .contains(r#"attribute severity : ScalarValues::String = "High";"#)
+        );
     }
 
     #[test]
