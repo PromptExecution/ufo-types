@@ -26,10 +26,17 @@ sysml-v2-parser = { version = "0.54", optional = true }
 # from Python, following common-core/critter-keeper's proven pyo3+maturin
 # pattern (`src/python.rs`, `#[pymodule] fn _core`).
 pyo3 = { version = "0.27", features = ["extension-module"], optional = true }
+# W3C SCXML statechart document model (P5, `elasticdotventures/_b00t_#1177`)
+# — the shared, standards-based representation state-machine-shaped types
+# across the b00t ecosystem compile to/from, replacing ad hoc per-domain
+# renderers. Pinned to an exact version: small bus factor (2 contributors,
+# 0.x semver) per this epic's own crate-evaluation research.
+scxml = { version = "=0.2.2", optional = true }
 
 [features]
 sysml = ["dep:sysml-v2-parser"]
 python = ["dep:pyo3", "sysml"]
+statechart = ["dep:scxml"]
 
 [dev-dependencies]
 serde_json = "1.0"

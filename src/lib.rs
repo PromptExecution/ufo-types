@@ -31,6 +31,13 @@
 //!   model artifact. All of `dare`'s core types implement it; see
 //!   `mbse`'s module docs for the one-line pattern to extend it.
 //!   Domain-generic.
+//! - **Statechart export** (`statechart`, feature-gated): bridges
+//!   state-machine-shaped types (starting with `dare`'s `OodaPhase`/
+//!   `OodaEvent`) to a W3C SCXML document via the `scxml` crate — one
+//!   shared, standards-based, round-trippable representation instead of a
+//!   bespoke per-domain renderer. `scxml` is a document model, not a
+//!   runtime; it never replaces a domain's real transition-enforcement
+//!   logic. Domain-generic.
 //! - **ISO standard wrappers** (`iso`): `Lei` (ISO 17442), `Isin` (ISO
 //!   6166), `Currency` (ISO 4217 + common crypto tickers), `BankAccount`
 //!   (IBAN/BIC/LEI bundle), `FinancialInstrument` (IFRS 9). These ARE
@@ -112,6 +119,8 @@ pub mod mbse;
 #[cfg(feature = "python")]
 mod python;
 pub mod satisfies;
+#[cfg(feature = "statechart")]
+pub mod statechart;
 pub mod stereotype;
 #[cfg(feature = "sysml")]
 pub mod sysml;
@@ -133,6 +142,8 @@ pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
+#[cfg(feature = "statechart")]
+pub use statechart::{CANCELLED_STATE_ID, ooda_phases_to_statechart};
 pub use stereotype::{Stereotyped, UfoCategory, UfoStereotype};
 #[cfg(feature = "sysml")]
 pub use sysml::{SysmlV2Syntax, validate_sysml_v2};
