@@ -88,10 +88,7 @@ mod tests {
         let json = serde_json::to_string(&edge).unwrap();
         assert!(json.contains("transformer"));
 
-        let no_kind = Edge {
-            kind: None,
-            ..edge
-        };
+        let no_kind = Edge { kind: None, ..edge };
         let json = serde_json::to_string(&no_kind).unwrap();
         assert!(json.contains("\"kind\":null"));
     }
