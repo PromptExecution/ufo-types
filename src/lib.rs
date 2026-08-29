@@ -20,6 +20,11 @@
 //! - **DARED proposal types** (`dare`): `Decision`, `Alternative`, `Risk`,
 //!   `ExecutiveDecision`, `OodaStateMachine` — a generic OODA state-change
 //!   proposal framework codified as Rust generics. Domain-generic.
+//! - **Graph IR** (`iso_ir`): `Node`/`Edge` — the generic graph vocabulary a
+//!   domain uses to describe connectivity before anything downstream lays
+//!   it out or renders it. Domain-generic; promoted from `systhread-core`
+//!   (narrower than that crate's own `iso_ir.rs` — layout/rendering and
+//!   lab-specific extraction stay there).
 //! - **MBSE export** (`mbse`): `MbseExport` — renders any `Stereotyped`
 //!   type as a SysML v2 `part` usage, so evidence built from these types
 //!   (a `DaredProposal`, a `Decision`) doubles as a systems-engineering
@@ -102,6 +107,7 @@
 pub mod capability;
 pub mod dare;
 pub mod iso;
+pub mod iso_ir;
 pub mod mbse;
 pub mod satisfies;
 pub mod stereotype;
@@ -120,6 +126,7 @@ pub use dare::{
     OodaStateMachineError, OodaTransition, Risk, RiskSeverity,
 };
 pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
+pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
