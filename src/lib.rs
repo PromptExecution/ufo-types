@@ -109,6 +109,8 @@ pub mod dare;
 pub mod iso;
 pub mod iso_ir;
 pub mod mbse;
+#[cfg(feature = "python")]
+mod python;
 pub mod satisfies;
 pub mod stereotype;
 #[cfg(feature = "sysml")]

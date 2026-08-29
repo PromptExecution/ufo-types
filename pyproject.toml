@@ -1,0 +1,33 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "ufo-types"
+description = "Cross-runtime SysML v2 syntax validation, backed by ufo-types' Rust-owned validate_sysml_v2 (P3, elasticdotventures/_b00t_#1177)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Brian Horakh", email = "brian@promptexecution.com" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+]
+keywords = ["sysml", "ufo", "pyo3", "maturin"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.maturin]
+features = ["python"]
+module-name = "ufo_types._core"
+python-source = "python"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
