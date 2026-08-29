@@ -134,11 +134,19 @@ fn render_field(name: &str, v: &Value) -> String {
             format!("    attribute {id} : ScalarValues::Boolean[0..*] = ({joined});\n")
         }
         Value::Array(items) if items.iter().all(|i| i.is_i64() || i.is_u64()) => {
-            let joined = items.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+            let joined = items
+                .iter()
+                .map(|i| i.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
             format!("    attribute {id} : ScalarValues::Integer[0..*] = ({joined});\n")
         }
         Value::Array(items) if items.iter().all(|i| i.is_number()) => {
-            let joined = items.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+            let joined = items
+                .iter()
+                .map(|i| i.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
             format!("    attribute {id} : ScalarValues::Real[0..*] = ({joined});\n")
         }
         Value::Array(_) => {
@@ -162,7 +170,13 @@ pub fn indent_block(text: &str) -> String {
 pub fn sanitize_ident(s: &str) -> String {
     let mut out: String = s
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect();
     if out.is_empty() || out.chars().next().is_some_and(|c| c.is_ascii_digit()) {
         out.insert(0, '_');
@@ -231,26 +245,45 @@ mod tests {
             scores: vec![9, 10],
             nickname: Some("Countess".into()),
             title: None,
-            home: Address { city: "London".into(), zip: "SW1".into() },
+            home: Address {
+                city: "London".into(),
+                zip: "SW1".into(),
+            },
             offices: vec![
-                Address { city: "Paris".into(), zip: "75001".into() },
-                Address { city: "Berlin".into(), zip: "10115".into() },
+                Address {
+                    city: "Paris".into(),
+                    zip: "75001".into(),
+                },
+                Address {
+                    city: "Berlin".into(),
+                    zip: "10115".into(),
+                },
             ],
         }
     }
 
     #[test]
     fn vec_of_strings_gets_star_multiplicity_and_a_sequence_literal() {
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         assert!(
-            text.contains(r#"attribute tags : ScalarValues::String[0..*] = ("engineer", "founder");"#),
+            text.contains(
+                r#"attribute tags : ScalarValues::String[0..*] = ("engineer", "founder");"#
+            ),
             "{text}"
         );
     }
 
     #[test]
     fn vec_of_integers_gets_star_multiplicity_and_a_sequence_literal() {
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         assert!(
             text.contains("attribute scores : ScalarValues::Integer[0..*] = (9, 10);"),
             "{text}"
@@ -259,17 +292,28 @@ mod tests {
 
     #[test]
     fn option_none_is_an_unset_attribute_not_a_bogus_empty_string() {
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         assert!(
             text.contains("attribute title : ScalarValues::String[0..1];"),
             "{text}"
         );
-        assert!(!text.contains(r#"title : ScalarValues::String = """#), "{text}");
+        assert!(
+            !text.contains(r#"title : ScalarValues::String = """#),
+            "{text}"
+        );
     }
 
     #[test]
     fn option_some_renders_as_a_plain_scalar() {
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         assert!(
             text.contains(r#"attribute nickname : ScalarValues::String = "Countess";"#),
             "{text}"
@@ -278,19 +322,36 @@ mod tests {
 
     #[test]
     fn nested_struct_becomes_a_real_nested_part_not_a_placeholder() {
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         assert!(text.contains("    part home {\n"), "{text}");
-        assert!(text.contains(r#"        attribute city : ScalarValues::String = "London";"#), "{text}");
+        assert!(
+            text.contains(r#"        attribute city : ScalarValues::String = "London";"#),
+            "{text}"
+        );
         assert!(!text.contains("<nested>"), "{text}");
     }
 
     #[test]
     fn vec_of_structs_becomes_one_numbered_nested_part_per_element() {
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         assert!(text.contains("    part offices_0 {\n"), "{text}");
-        assert!(text.contains(r#"        attribute city : ScalarValues::String = "Paris";"#), "{text}");
+        assert!(
+            text.contains(r#"        attribute city : ScalarValues::String = "Paris";"#),
+            "{text}"
+        );
         assert!(text.contains("    part offices_1 {\n"), "{text}");
-        assert!(text.contains(r#"        attribute city : ScalarValues::String = "Berlin";"#), "{text}");
+        assert!(
+            text.contains(r#"        attribute city : ScalarValues::String = "Berlin";"#),
+            "{text}"
+        );
     }
 
     #[cfg(feature = "sysml")]
@@ -298,7 +359,11 @@ mod tests {
     fn vec_option_and_nested_struct_dump_is_syntactically_valid_sysml_v2() {
         use crate::sysml::validate_sysml_v2;
 
-        let text = mbse_field_dump(&UfoStereotype::Kind("Person".into()), "Person", &sample_person());
+        let text = mbse_field_dump(
+            &UfoStereotype::Kind("Person".into()),
+            "Person",
+            &sample_person(),
+        );
         let wrapped = format!("package MbseExport {{\n{}}}\n", indent_block(&text));
         let result = validate_sysml_v2(&wrapped);
         assert!(

@@ -17,8 +17,8 @@
 //! record_is_a("company:5493001K", &k.to_string());
 //! ```
 
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 /// Top-level UFO ontological category (Guizzardi 2005, §3).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
@@ -145,7 +145,12 @@ impl UfoStereotype {
     pub fn category(&self) -> UfoCategory {
         use UfoStereotype::*;
         match self {
-            Kind(_) | SubKind { .. } | Role(_) | Phase(_) | Category(_) | Mixin(_)
+            Kind(_)
+            | SubKind { .. }
+            | Role(_)
+            | Phase(_)
+            | Category(_)
+            | Mixin(_)
             | RoleMixin(_) => UfoCategory::Endurant,
             Process(_) | State(_) | Event(_) | Scenario(_) => UfoCategory::Perdurant,
             Relator(_) | Mode(_) => UfoCategory::Moment,
@@ -262,12 +267,18 @@ mod tests {
 
     #[test]
     fn new_endurant_substereotypes_display() {
-        assert_eq!(UfoStereotype::Phase("Draft".into()).to_string(), "Phase:Draft");
+        assert_eq!(
+            UfoStereotype::Phase("Draft".into()).to_string(),
+            "Phase:Draft"
+        );
         assert_eq!(
             UfoStereotype::Category("PhysicalObject".into()).to_string(),
             "Category:PhysicalObject"
         );
-        assert_eq!(UfoStereotype::Mixin("Insurable".into()).to_string(), "Mixin:Insurable");
+        assert_eq!(
+            UfoStereotype::Mixin("Insurable".into()).to_string(),
+            "Mixin:Insurable"
+        );
         assert_eq!(
             UfoStereotype::RoleMixin("Customer".into()).to_string(),
             "RoleMixin:Customer"
@@ -276,41 +287,104 @@ mod tests {
 
     #[test]
     fn perdurant_substereotypes_display() {
-        assert_eq!(UfoStereotype::Process("Review".into()).to_string(), "Process:Review");
-        assert_eq!(UfoStereotype::State("UnderReview".into()).to_string(), "State:UnderReview");
-        assert_eq!(UfoStereotype::Event("Submitted".into()).to_string(), "Event:Submitted");
-        assert_eq!(UfoStereotype::Scenario("Audit".into()).to_string(), "Scenario:Audit");
+        assert_eq!(
+            UfoStereotype::Process("Review".into()).to_string(),
+            "Process:Review"
+        );
+        assert_eq!(
+            UfoStereotype::State("UnderReview".into()).to_string(),
+            "State:UnderReview"
+        );
+        assert_eq!(
+            UfoStereotype::Event("Submitted".into()).to_string(),
+            "Event:Submitted"
+        );
+        assert_eq!(
+            UfoStereotype::Scenario("Audit".into()).to_string(),
+            "Scenario:Audit"
+        );
     }
 
     #[test]
     fn abstract_display() {
-        assert_eq!(UfoStereotype::Abstract("Pi".into()).to_string(), "Abstract:Pi");
+        assert_eq!(
+            UfoStereotype::Abstract("Pi".into()).to_string(),
+            "Abstract:Pi"
+        );
     }
 
     #[test]
     fn category_classifies_every_variant_correctly() {
-        assert_eq!(UfoStereotype::Kind("x".into()).category(), UfoCategory::Endurant);
         assert_eq!(
-            UfoStereotype::SubKind { name: "x".into(), parent: "y".into() }.category(),
+            UfoStereotype::Kind("x".into()).category(),
             UfoCategory::Endurant
         );
-        assert_eq!(UfoStereotype::Role("x".into()).category(), UfoCategory::Endurant);
-        assert_eq!(UfoStereotype::Phase("x".into()).category(), UfoCategory::Endurant);
-        assert_eq!(UfoStereotype::Category("x".into()).category(), UfoCategory::Endurant);
-        assert_eq!(UfoStereotype::Mixin("x".into()).category(), UfoCategory::Endurant);
-        assert_eq!(UfoStereotype::RoleMixin("x".into()).category(), UfoCategory::Endurant);
-        assert_eq!(UfoStereotype::Process("x".into()).category(), UfoCategory::Perdurant);
-        assert_eq!(UfoStereotype::State("x".into()).category(), UfoCategory::Perdurant);
-        assert_eq!(UfoStereotype::Event("x".into()).category(), UfoCategory::Perdurant);
-        assert_eq!(UfoStereotype::Scenario("x".into()).category(), UfoCategory::Perdurant);
-        assert_eq!(UfoStereotype::Relator("x".into()).category(), UfoCategory::Moment);
-        assert_eq!(UfoStereotype::Mode("x".into()).category(), UfoCategory::Moment);
-        assert_eq!(UfoStereotype::Abstract("x".into()).category(), UfoCategory::Abstract);
+        assert_eq!(
+            UfoStereotype::SubKind {
+                name: "x".into(),
+                parent: "y".into()
+            }
+            .category(),
+            UfoCategory::Endurant
+        );
+        assert_eq!(
+            UfoStereotype::Role("x".into()).category(),
+            UfoCategory::Endurant
+        );
+        assert_eq!(
+            UfoStereotype::Phase("x".into()).category(),
+            UfoCategory::Endurant
+        );
+        assert_eq!(
+            UfoStereotype::Category("x".into()).category(),
+            UfoCategory::Endurant
+        );
+        assert_eq!(
+            UfoStereotype::Mixin("x".into()).category(),
+            UfoCategory::Endurant
+        );
+        assert_eq!(
+            UfoStereotype::RoleMixin("x".into()).category(),
+            UfoCategory::Endurant
+        );
+        assert_eq!(
+            UfoStereotype::Process("x".into()).category(),
+            UfoCategory::Perdurant
+        );
+        assert_eq!(
+            UfoStereotype::State("x".into()).category(),
+            UfoCategory::Perdurant
+        );
+        assert_eq!(
+            UfoStereotype::Event("x".into()).category(),
+            UfoCategory::Perdurant
+        );
+        assert_eq!(
+            UfoStereotype::Scenario("x".into()).category(),
+            UfoCategory::Perdurant
+        );
+        assert_eq!(
+            UfoStereotype::Relator("x".into()).category(),
+            UfoCategory::Moment
+        );
+        assert_eq!(
+            UfoStereotype::Mode("x".into()).category(),
+            UfoCategory::Moment
+        );
+        assert_eq!(
+            UfoStereotype::Abstract("x".into()).category(),
+            UfoCategory::Abstract
+        );
     }
 
     #[test]
     fn ufo_category_roundtrip() {
-        for cat in [UfoCategory::Endurant, UfoCategory::Perdurant, UfoCategory::Moment, UfoCategory::Abstract] {
+        for cat in [
+            UfoCategory::Endurant,
+            UfoCategory::Perdurant,
+            UfoCategory::Moment,
+            UfoCategory::Abstract,
+        ] {
             let json = serde_json::to_string(&cat).unwrap();
             let back: UfoCategory = serde_json::from_str(&json).unwrap();
             assert_eq!(cat, back);

@@ -15,8 +15,8 @@
 //! external consumers and are superseded by `Currency`/`FinancialInstrument`
 //! above, which cover the same ground.
 
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]
@@ -146,11 +146,21 @@ impl Currency {
 impl std::fmt::Display for Currency {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
-            Currency::Aud => "AUD", Currency::Usd => "USD", Currency::Eur => "EUR",
-            Currency::Gbp => "GBP", Currency::Jpy => "JPY", Currency::Cad => "CAD",
-            Currency::Chf => "CHF", Currency::Nzd => "NZD", Currency::Sgd => "SGD",
-            Currency::Hkd => "HKD", Currency::Btc => "BTC", Currency::Eth => "ETH",
-            Currency::Usdt => "USDT", Currency::Usdc => "USDC", Currency::Sol => "SOL",
+            Currency::Aud => "AUD",
+            Currency::Usd => "USD",
+            Currency::Eur => "EUR",
+            Currency::Gbp => "GBP",
+            Currency::Jpy => "JPY",
+            Currency::Cad => "CAD",
+            Currency::Chf => "CHF",
+            Currency::Nzd => "NZD",
+            Currency::Sgd => "SGD",
+            Currency::Hkd => "HKD",
+            Currency::Btc => "BTC",
+            Currency::Eth => "ETH",
+            Currency::Usdt => "USDT",
+            Currency::Usdc => "USDC",
+            Currency::Sol => "SOL",
             Currency::Xrp => "XRP",
         };
         write!(f, "{s}")
@@ -227,19 +237,32 @@ fn mod97(s: &str) -> u64 {
 
 fn luhn_isin_check(isin: &str) -> bool {
     // Expand alphanumeric ISIN to digit string (A→10, B→11, …, Z→35)
-    let digits: String = isin.chars().flat_map(|c| {
-        if c.is_ascii_digit() {
-            vec![c]
-        } else {
-            let n = c as u32 - 'A' as u32 + 10;
-            format!("{n}").chars().collect()
-        }
-    }).collect();
+    let digits: String = isin
+        .chars()
+        .flat_map(|c| {
+            if c.is_ascii_digit() {
+                vec![c]
+            } else {
+                let n = c as u32 - 'A' as u32 + 10;
+                format!("{n}").chars().collect()
+            }
+        })
+        .collect();
 
-    let sum: u32 = digits.chars().rev().enumerate().map(|(i, c)| {
-        let d = c.to_digit(10).unwrap_or(0);
-        if i % 2 == 0 { d } else { let v = d * 2; if v > 9 { v - 9 } else { v } }
-    }).sum();
+    let sum: u32 = digits
+        .chars()
+        .rev()
+        .enumerate()
+        .map(|(i, c)| {
+            let d = c.to_digit(10).unwrap_or(0);
+            if i % 2 == 0 {
+                d
+            } else {
+                let v = d * 2;
+                if v > 9 { v - 9 } else { v }
+            }
+        })
+        .sum();
     sum % 10 == 0
 }
 
@@ -256,7 +279,10 @@ mod tests {
 
     #[test]
     fn lei_wrong_length() {
-        assert!(matches!(Lei::new("SHORT"), Err(IsoValidationError::LeiLength(_))));
+        assert!(matches!(
+            Lei::new("SHORT"),
+            Err(IsoValidationError::LeiLength(_))
+        ));
     }
 
     #[test]
@@ -267,7 +293,10 @@ mod tests {
 
     #[test]
     fn isin_wrong_length() {
-        assert!(matches!(Isin::new("US037"), Err(IsoValidationError::IsinLength(_))));
+        assert!(matches!(
+            Isin::new("US037"),
+            Err(IsoValidationError::IsinLength(_))
+        ));
     }
 
     #[test]
@@ -294,6 +323,9 @@ mod tests {
     #[test]
     fn financial_instrument_ifrs_section() {
         assert_eq!(FinancialInstrument::Fvpl.ifrs_section(), "IFRS 9 §4.1.4");
-        assert_eq!(FinancialInstrument::AmortizedCost.ifrs_section(), "IFRS 9 §4.1.2");
+        assert_eq!(
+            FinancialInstrument::AmortizedCost.ifrs_section(),
+            "IFRS 9 §4.1.2"
+        );
     }
 }

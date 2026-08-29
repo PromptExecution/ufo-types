@@ -15,7 +15,7 @@
 //! `sysml-v2-parser` is not wasm32-compatible — consumers that don't need
 //! SysML v2 syntax validation don't pay for it.
 
-use crate::satisfies::{Constraint, NodeId, SatisfiesResult, Satisfies};
+use crate::satisfies::{Constraint, NodeId, Satisfies, SatisfiesResult};
 use sysml_v2_parser::parse_for_editor;
 
 /// Constraint: the subject text is syntactically valid SysML v2, per
@@ -66,7 +66,11 @@ mod tests {
     fn valid_sysml_v2_is_satisfied() {
         let text = "package Foo {\n    part def Bar {\n        attribute x : ScalarValues::Boolean;\n    }\n}\n";
         let result = validate_sysml_v2(text);
-        assert!(result.disposition.is_satisfied(), "{:?}", result.disposition);
+        assert!(
+            result.disposition.is_satisfied(),
+            "{:?}",
+            result.disposition
+        );
     }
 
     #[test]
@@ -91,6 +95,12 @@ mod tests {
     fn satisfies_trait_is_usable_on_str_and_string() {
         let owned = String::from("package Foo {\n}\n");
         assert!(owned.satisfies(&SysmlV2Syntax).disposition.is_satisfied());
-        assert!(owned.as_str().satisfies(&SysmlV2Syntax).disposition.is_satisfied());
+        assert!(
+            owned
+                .as_str()
+                .satisfies(&SysmlV2Syntax)
+                .disposition
+                .is_satisfied()
+        );
     }
 }
