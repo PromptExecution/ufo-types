@@ -112,6 +112,7 @@
 //! - ATO QC 53725 — AU crypto CGT treatment
 
 pub mod capability;
+pub mod coherence;
 pub mod dare;
 pub mod iso;
 pub mod iso_ir;
@@ -132,6 +133,7 @@ pub use capability::{
     EnergyBudget, Episode, History, ReviewVerdict, ReviewerType, Solution, StateObservation, Task,
     TaskStatus, TrainingCorpus,
 };
+pub use coherence::{NumericAgreement, validate_numeric_agreement};
 pub use dare::{
     Alternative, DaredAcceptanceCriteria, DaredDocument, DaredProposal, DaredValidationError,
     Decision, ExecutiveDecision, OodaEvent, OodaGuards, OodaPhase, OodaStateMachine,
