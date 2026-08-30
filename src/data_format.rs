@@ -88,7 +88,9 @@ mod tests {
             DataFormat::Csv,
             DataFormat::PdfExtractedText,
             DataFormat::Image,
-            DataFormat::Other { format: "application/x-custom".to_string() },
+            DataFormat::Other {
+                format: "application/x-custom".to_string(),
+            },
         ];
         for format in formats {
             let json = serde_json::to_string(&format).unwrap();
@@ -101,14 +103,21 @@ mod tests {
     fn data_format_wire_shape_is_tagged() {
         let json = serde_json::to_string(&DataFormat::Json).unwrap();
         assert_eq!(json, r#"{"type":"json"}"#);
-        let json = serde_json::to_string(&DataFormat::Other { format: "foo".to_string() }).unwrap();
+        let json = serde_json::to_string(&DataFormat::Other {
+            format: "foo".to_string(),
+        })
+        .unwrap();
         assert_eq!(json, r#"{"type":"other","format":"foo"}"#);
     }
 
     #[test]
     fn well_formed_json_satisfies_constraint() {
         let result = validate_json_well_formed(r#"{"a": 1, "b": [true, null]}"#);
-        assert!(result.disposition.is_satisfied(), "{:?}", result.disposition);
+        assert!(
+            result.disposition.is_satisfied(),
+            "{:?}",
+            result.disposition
+        );
         assert_eq!(result.confidence, 1.0);
     }
 
@@ -116,7 +125,10 @@ mod tests {
     fn malformed_json_violates_constraint() {
         let result = validate_json_well_formed(r#"{"a": 1,"#);
         assert!(!result.disposition.is_satisfied());
-        assert!(matches!(result.disposition, crate::satisfies::Disposition::Violated { .. }));
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Violated { .. }
+        ));
     }
 
     #[test]
