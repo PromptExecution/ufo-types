@@ -9,8 +9,8 @@
 //! Prompt construction and domain-specific payload types (what "propose" and
 //! "review" mean for a given problem) are the caller's responsibility.
 
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 
 /// Trait for model invocation. Implementors substitute different LLM
 /// providers, or a mock for testing.
@@ -142,7 +142,13 @@ mod tests {
         let json = r#"{"value":"hello","confidence":0.75}"#;
         let mock = MockModelClient::default().with_response(json);
         let result: TestProposal = mock.extract("any prompt").unwrap();
-        assert_eq!(result, TestProposal { value: "hello".to_string(), confidence: 0.75 });
+        assert_eq!(
+            result,
+            TestProposal {
+                value: "hello".to_string(),
+                confidence: 0.75
+            }
+        );
     }
 
     #[test]

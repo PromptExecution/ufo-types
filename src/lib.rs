@@ -142,7 +142,7 @@ pub use dare::{
 pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
 pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
-pub use multi_model::{ModelClient, MockModelClient, MultiModelConfig, MultiModelVerifier};
+pub use multi_model::{MockModelClient, ModelClient, MultiModelConfig, MultiModelVerifier};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };

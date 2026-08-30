@@ -54,7 +54,11 @@ mod tests {
     fn values_within_tolerance_are_satisfied() {
         let values = vec![100.00, 100.02, 99.99];
         let result = validate_numeric_agreement(&values, 0.05);
-        assert!(result.disposition.is_satisfied(), "{:?}", result.disposition);
+        assert!(
+            result.disposition.is_satisfied(),
+            "{:?}",
+            result.disposition
+        );
     }
 
     #[test]
@@ -62,21 +66,30 @@ mod tests {
         let values = vec![100.00, 105.00];
         let result = validate_numeric_agreement(&values, 0.05);
         assert!(!result.disposition.is_satisfied());
-        assert!(matches!(result.disposition, crate::satisfies::Disposition::Violated { .. }));
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Violated { .. }
+        ));
     }
 
     #[test]
     fn single_value_is_unknown_not_satisfied() {
         let values = vec![100.00];
         let result = validate_numeric_agreement(&values, 0.05);
-        assert!(matches!(result.disposition, crate::satisfies::Disposition::Unknown));
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Unknown
+        ));
     }
 
     #[test]
     fn empty_values_is_unknown() {
         let values: Vec<f64> = vec![];
         let result = validate_numeric_agreement(&values, 0.05);
-        assert!(matches!(result.disposition, crate::satisfies::Disposition::Unknown));
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Unknown
+        ));
     }
 
     #[test]
@@ -84,6 +97,12 @@ mod tests {
         let values = vec![50.0, 50.01];
         let constraint = NumericAgreement { tolerance: 0.05 };
         assert!(values.satisfies(&constraint).disposition.is_satisfied());
-        assert!(values.as_slice().satisfies(&constraint).disposition.is_satisfied());
+        assert!(
+            values
+                .as_slice()
+                .satisfies(&constraint)
+                .disposition
+                .is_satisfied()
+        );
     }
 }
