@@ -117,6 +117,7 @@ pub mod data_format;
 pub mod iso;
 pub mod iso_ir;
 pub mod mbse;
+pub mod model_capability;
 #[cfg(feature = "python")]
 mod python;
 pub mod satisfies;
@@ -141,6 +142,7 @@ pub use data_format::{DataFormat, JsonWellFormed, validate_json_well_formed};
 pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
 pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
+pub use model_capability::ModelCapability;
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
