@@ -116,6 +116,7 @@ pub mod dare;
 pub mod iso;
 pub mod iso_ir;
 pub mod mbse;
+pub mod multi_model;
 #[cfg(feature = "python")]
 mod python;
 pub mod satisfies;
@@ -139,6 +140,7 @@ pub use dare::{
 pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
 pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
+pub use multi_model::{ModelClient, MockModelClient, MultiModelConfig, MultiModelVerifier};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
