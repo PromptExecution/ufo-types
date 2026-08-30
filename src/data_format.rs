@@ -4,9 +4,9 @@
 //! `_b00t_`'s `b00t-mcp`) and ledgrrr's document-intelligence pipeline
 //! (Phase 3+) both describe "what a model serves" in terms of this enum.
 //!
-//! Deliberately small and non-exhaustive: `Other(String)` is the escape
-//! hatch for anything not yet enumerated, rather than growing this list
-//! ahead of a real second consumer needing the specific variant.
+//! Deliberately small and non-exhaustive: `Other { format: String }` is the
+//! escape hatch for anything not yet enumerated, rather than growing this
+//! list ahead of a real second consumer needing the specific variant.
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
