@@ -137,7 +137,7 @@ pub use dare::{
     Decision, ExecutiveDecision, OodaEvent, OodaGuards, OodaPhase, OodaStateMachine,
     OodaStateMachineError, OodaTransition, Risk, RiskSeverity,
 };
-pub use data_format::DataFormat;
+pub use data_format::{DataFormat, JsonWellFormed, validate_json_well_formed};
 pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationError, Lei};
 pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};

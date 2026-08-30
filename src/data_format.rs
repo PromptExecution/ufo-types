@@ -43,6 +43,39 @@ pub enum DataFormat {
     Other { format: String },
 }
 
+use crate::satisfies::{Constraint, Satisfies, SatisfiesResult};
+
+/// Constraint: the subject text is well-formed JSON.
+///
+/// Follows the same `Satisfies<C>` shape as `crate::sysml::SysmlV2Syntax`
+/// (see `src/sysml.rs`) — this is the first proof that pattern generalizes
+/// to a non-SysML format.
+pub struct JsonWellFormed;
+
+impl Constraint for JsonWellFormed {}
+
+impl Satisfies<JsonWellFormed> for str {
+    fn satisfies(&self, _constraint: &JsonWellFormed) -> SatisfiesResult {
+        validate_json_well_formed(self)
+    }
+}
+
+impl Satisfies<JsonWellFormed> for String {
+    fn satisfies(&self, constraint: &JsonWellFormed) -> SatisfiesResult {
+        self.as_str().satisfies(constraint)
+    }
+}
+
+/// Parse `text` as JSON and report the result as a [`SatisfiesResult`]:
+/// `Satisfied` if it parses, `Violated` with `serde_json`'s error message
+/// otherwise.
+pub fn validate_json_well_formed(text: &str) -> SatisfiesResult {
+    match serde_json::from_str::<serde_json::Value>(text) {
+        Ok(_) => SatisfiesResult::satisfied(1.0, Vec::new()),
+        Err(e) => SatisfiesResult::violated(e.to_string()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -70,5 +103,32 @@ mod tests {
         assert_eq!(json, r#"{"type":"json"}"#);
         let json = serde_json::to_string(&DataFormat::Other { format: "foo".to_string() }).unwrap();
         assert_eq!(json, r#"{"type":"other","format":"foo"}"#);
+    }
+
+    #[test]
+    fn well_formed_json_satisfies_constraint() {
+        let result = validate_json_well_formed(r#"{"a": 1, "b": [true, null]}"#);
+        assert!(result.disposition.is_satisfied(), "{:?}", result.disposition);
+        assert_eq!(result.confidence, 1.0);
+    }
+
+    #[test]
+    fn malformed_json_violates_constraint() {
+        let result = validate_json_well_formed(r#"{"a": 1,"#);
+        assert!(!result.disposition.is_satisfied());
+        assert!(matches!(result.disposition, crate::satisfies::Disposition::Violated { .. }));
+    }
+
+    #[test]
+    fn satisfies_trait_usable_on_str_and_string() {
+        let owned = String::from(r#"{"ok": true}"#);
+        assert!(owned.satisfies(&JsonWellFormed).disposition.is_satisfied());
+        assert!(
+            owned
+                .as_str()
+                .satisfies(&JsonWellFormed)
+                .disposition
+                .is_satisfied()
+        );
     }
 }
