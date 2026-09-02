@@ -18,9 +18,10 @@ use std::time::{Duration, Instant};
 // ── FlowStrategy ──────────────────────────────────────────────────────────────
 
 /// Back-pressure strategy for a pipeline stage.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum FlowStrategy {
     /// No back-pressure — data flows as fast as produced.
+    #[default]
     Unbounded,
     /// Fixed-capacity buffer.  Blocks when the buffer is full.
     Buffered { capacity: usize },
@@ -28,17 +29,6 @@ pub enum FlowStrategy {
     Throttled { max_bytes_per_sec: u64 },
     /// Sliding window: limits how many items are in-flight downstream.
     Windowed { max_in_flight: usize },
-}
-
-// 🤓 clippy::derivable_impls wants `#[derive(Default)]` + `#[default]` here,
-//    but that reshapes the enum declaration itself (this file is otherwise
-//    a verbatim copy from b00t-cli) — suppressing is the smaller diff for
-//    an identical-behavior manual impl.
-#[allow(clippy::derivable_impls)]
-impl Default for FlowStrategy {
-    fn default() -> Self {
-        Self::Unbounded
-    }
 }
 
 // ── FlowControl ──────────────────────────────────────────────────────────────
