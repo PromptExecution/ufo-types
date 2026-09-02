@@ -53,3 +53,4 @@ keyring = ["dep:keyring"]
 [dev-dependencies]
 serde_json = "1.0"
 tempfile = "3"
+toml = "0.8"
