@@ -120,6 +120,7 @@ pub mod iso_ir;
 pub mod mbse;
 pub mod model_capability;
 pub mod multi_model;
+pub mod pipeline_secrets;
 #[cfg(feature = "python")]
 mod python;
 pub mod satisfies;
@@ -147,6 +148,9 @@ pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use model_capability::ModelCapability;
 pub use multi_model::{MockModelClient, ModelClient, MultiModelConfig, MultiModelVerifier};
+pub use pipeline_secrets::{
+    SecretRef, SecretSource, SecretStore, SecureStageEnv, list_azure_secret_names, load_secret,
+};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
