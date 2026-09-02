@@ -1358,15 +1358,12 @@ mod tests {
     }
 
     #[test]
-    // clippy::bool_assert_comparison wants `assert!(...)` for the
-    // requires_gpu line below; verbatim-copied from b00t-cli otherwise.
-    #[allow(clippy::bool_assert_comparison)]
     fn stage_entry_spec_resolves() {
         let json = r#"{"name":"transcode","profile":{"name":"transcode","ports":[],"resources":{"min_ram_gb":1.0,"min_vram_gb":8.0,"requires_gpu":true,"cpu_cores":null,"scratch_disk_gb":null},"image":null,"timeout_seconds":600},"input_ports":[{"direction":"Input","media_type":"Video","description":"in"}],"output_ports":[{"direction":"Output","media_type":"Video","description":"out"}],"error_routes":[],"env":null,"checkpoint_interval_seconds":null}"#;
         let entry: StageEntry = serde_json::from_str(json).unwrap();
         let spec = entry.resolve();
         assert_eq!(spec.name, "transcode");
-        assert_eq!(spec.profile.resources.requires_gpu, true);
+        assert!(spec.profile.resources.requires_gpu);
         assert_eq!(spec.profile.resources.min_vram_gb, 8.0);
         assert_eq!(spec.profile.timeout_seconds, Some(600));
         assert_eq!(spec.input_ports[0].media_type, PortMediaType::Video);
