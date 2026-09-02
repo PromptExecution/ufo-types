@@ -1,3 +1,18 @@
+//! Pipeline stage and DAG types — the shape of a pipeline before it runs.
+//!
+//! `StageSpec`/`CapsuleProfile`/`StagePort` define a single pipeline stage:
+//! its resource requirements, container profile, and input/output ports.
+//! `PipelineDag` wires a `Vec<StageSpec>` together by matching output ports
+//! to compatible input ports (`StagePort::compatible_with`), validates the
+//! result is acyclic via topological sort, and infers entry/exit points.
+//! `HostResources` implements `crate::satisfies::Satisfies<ResourceRequirements>`
+//! directly against this crate's own constraint-satisfaction shape, so a
+//! scheduling fit-check produces the same `SatisfiesResult`/`Disposition`
+//! evidence as every other constraint in this crate.
+//!
+//! Extracted from `b00t-cli`'s `pipeline_types.rs`
+//! (`elasticdotventures/_b00t_#1251`).
+
 use crate::pipeline_secrets::SecretRef;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -63,6 +78,8 @@ pub struct ResourceRequirements {
     pub cpu_cores: Option<u32>,
     pub scratch_disk_gb: Option<f64>,
 }
+
+impl crate::satisfies::Constraint for ResourceRequirements {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HostResources {
@@ -222,6 +239,10 @@ pub struct StageSpec {
     pub input_ports: Vec<StagePort>,
     pub output_ports: Vec<StagePort>,
     pub error_routes: Vec<ErrorRoute>,
+    /// Plain environment variables for this stage. **Not** for secrets: if
+    /// populated via [`crate::pipeline_secrets::SecretStore::inject_to_env`],
+    /// this map holds unredacted plaintext and must not be `Debug`-printed
+    /// or serialized once secrets are injected into it.
     pub env: Option<HashMap<String, String>>,
     pub checkpoint_interval_seconds: Option<u64>,
     pub secret_refs: Option<Vec<SecretRef>>,

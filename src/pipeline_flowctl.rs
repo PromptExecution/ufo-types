@@ -1,13 +1,13 @@
-// 🤓 Pipeline flow control — back-pressure and throttling between stages.
-//
-//    Strategies:
-//      Unbounded   — no back-pressure (default for CPU stages)
-//      Buffered    — bounded buffer with capacity limit
-//      Throttled   — rate-limited by bytes-per-second
-//      Windowed    — limits concurrent in-flight items
-//
-//    FlowGate wraps an `Arc<Mutex<FlowControl>>` so producer and consumer
-//    stages (or the executor) can share state without a direct reference.
+//! 🤓 Pipeline flow control — back-pressure and throttling between stages.
+//!
+//!    Strategies:
+//!      Unbounded   — no back-pressure (default for CPU stages)
+//!      Buffered    — bounded buffer with capacity limit
+//!      Throttled   — rate-limited by bytes-per-second
+//!      Windowed    — limits concurrent in-flight items
+//!
+//!    FlowGate wraps an `Arc<Mutex<FlowControl>>` so producer and consumer
+//!    stages (or the executor) can share state without a direct reference.
 
 use crate::pipeline_types::{CapsuleProfile, StageSpec};
 use serde::{Deserialize, Serialize};

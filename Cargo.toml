@@ -8,6 +8,10 @@ license = "MIT"
 repository = "https://github.com/PromptExecution/ufo-types"
 description = "UFO stereotypes, Satisfies<T> constraint trait, DARE proposal types, and ISO wrappers for the Tax-Lawyer platform + b00t governance"
 
+# This crate is cloned nested inside another project's cargo workspace
+# directory tree (e.g. app4dog's worktrees); an empty [workspace] table here
+# stops cargo's workspace auto-discovery from walking up and claiming this
+# crate as a member of that outer workspace.
 [workspace]
 
 [lib]
