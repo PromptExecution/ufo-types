@@ -45,6 +45,18 @@
 //!   standards and are only meaningful to consumers working in that space
 //!   (e.g. Tax-Lawyer, `ledgrrr`). Not intended as a generic building block
 //!   for unrelated domains.
+//! - **Pipeline orchestration types** (`pipeline_types`, `pipeline_flowctl`,
+//!   `pipeline_secrets`): `StageSpec`/`CapsuleProfile`/`StagePort` (a
+//!   pipeline stage's shape, resources, and ports), `PipelineDag` (stage
+//!   wiring, topological ordering, cycle detection), `FlowStrategy`/
+//!   `FlowControl`/`FlowGate` (back-pressure between stages), and
+//!   `SecretRef`/`SecretStore` (secret injection into stage environments).
+//!   Extracted from `b00t-cli`'s `pipeline_*.rs` modules
+//!   (`elasticdotventures/_b00t_#1251`) so a lightweight pipeline-engine
+//!   consumer doesn't need the full 34-submodule `_b00t_` monorepo as a
+//!   dependency. `HostResources`'s `Satisfies<ResourceRequirements>` impl
+//!   uses this crate's own `satisfies` module directly (ported from
+//!   `b00t-cli`'s separate `b00t_c0re_lib::satisfies` shape). Domain-generic.
 //!
 //! Any b00t-ecosystem project needing UFO-grounded domain types and the
 //! `Satisfies<T>` pattern (e.g. `stereotype`, `satisfies`, `capability`,
@@ -120,6 +132,9 @@ pub mod iso_ir;
 pub mod mbse;
 pub mod model_capability;
 pub mod multi_model;
+pub mod pipeline_flowctl;
+pub mod pipeline_secrets;
+pub mod pipeline_types;
 #[cfg(feature = "python")]
 mod python;
 pub mod satisfies;
@@ -147,6 +162,18 @@ pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use model_capability::ModelCapability;
 pub use multi_model::{MockModelClient, ModelClient, MultiModelConfig, MultiModelVerifier};
+pub use pipeline_flowctl::{
+    FlowControl, FlowGate, FlowStrategy, StageFlowConfig, auto_strategy, is_gpu_profile,
+    is_memory_intensive,
+};
+pub use pipeline_secrets::{
+    SecretRef, SecretSource, SecretStore, SecureStageEnv, list_azure_secret_names, load_secret,
+};
+pub use pipeline_types::{
+    CapsuleProfile, ErrorRoute, HostResources, NegotiationResult, PipelineDag, PipelineEdge,
+    PipelineError, PortDirection, PortMediaType, ResourceFit, ResourceRequirements, StageEntry,
+    StagePort, StageSpec, auto_insert_conversions, can_negotiate,
+};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };

@@ -6,6 +6,25 @@ for reference without a full itemized history.
 
 ## [Unreleased]
 
+Added:
+- `pipeline_types`: `StageSpec`/`CapsuleProfile`/`StagePort`/`PipelineDag` and
+  related types (port compatibility negotiation, error routing, DAG wiring
+  with topological ordering and cycle detection), extracted from
+  `b00t-cli`'s `pipeline_types.rs` (`elasticdotventures/_b00t_#1251`).
+- `pipeline_flowctl`: `FlowStrategy`/`FlowControl`/`FlowGate`/
+  `StageFlowConfig` for back-pressure and throttling between pipeline
+  stages, extracted from `b00t-cli` (`elasticdotventures/_b00t_#1251`).
+- `pipeline_secrets`: `SecretRef`/`SecretStore`/`SecureStageEnv` for
+  resolving and injecting secrets into stage environments without exposing
+  them in pipeline definitions, extracted from `b00t-cli`
+  (`elasticdotventures/_b00t_#1251`).
+- `keyring` (optional feature): OS keyring backend for
+  `pipeline_secrets::SecretSource::Keyring`
+  (`elasticdotventures/_b00t_#1251`).
+- New mandatory dependencies `rpassword` and `shellexpand`, used by
+  `pipeline_secrets`'s `Prompt` and `File` secret sources respectively
+  (`elasticdotventures/_b00t_#1251`).
+
 ## [0.11.0] - pending tag
 
 Additive, non-breaking release. No public API was removed or changed

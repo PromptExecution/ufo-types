@@ -8,6 +8,12 @@ license = "MIT"
 repository = "https://github.com/PromptExecution/ufo-types"
 description = "UFO stereotypes, Satisfies<T> constraint trait, DARE proposal types, and ISO wrappers for the Tax-Lawyer platform + b00t governance"
 
+# This crate is cloned nested inside another project's cargo workspace
+# directory tree (e.g. app4dog's worktrees); an empty [workspace] table here
+# stops cargo's workspace auto-discovery from walking up and claiming this
+# crate as a member of that outer workspace.
+[workspace]
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -18,6 +24,14 @@ chrono = { version = "0.4", features = ["serde"] }
 thiserror = "2"
 anyhow = "1"
 schemars = { version = "0.8", features = ["derive"] }
+rpassword = "7"
+shellexpand = "3.1"
+# Optional OS keyring backend for `pipeline_secrets::SecretSource::Keyring`
+# (elasticdotventures/_b00t_#1251 extraction) — mirrors b00t-cli's existing
+# `keyring` feature name/gate, but as a real dependency: b00t-cli's own
+# `keyring = []` feature is a no-op stub with no crate behind it, so that
+# code path has never actually compiled there. This makes it real.
+keyring = { version = "3", optional = true }
 # `sysml-v2-parser` is not wasm32-compatible, so `sysml` is opt-in rather
 # than a default feature — consumers that don't need SysML v2 syntax
 # validation (most of them) don't pay for it.
@@ -38,6 +52,9 @@ scxml = { version = "=0.2.2", optional = true }
 sysml = ["dep:sysml-v2-parser"]
 python = ["dep:pyo3", "sysml"]
 statechart = ["dep:scxml"]
+keyring = ["dep:keyring"]
 
 [dev-dependencies]
 serde_json = "1.0"
+tempfile = "3"
+toml = "0.8"
