@@ -99,6 +99,13 @@ impl SecretStore {
     /// each secret's `env_var` field as the destination key.
     ///
     /// This **overwrites** any existing keys with the same name.
+    ///
+    /// # Security
+    /// After this call, `env` holds **unredacted plaintext** secret values.
+    /// Do not `Debug`-print or serialize `env` (or anything derived from it),
+    /// and do not store it back into [`crate::pipeline_types::StageSpec::env`]
+    /// — that field derives `Debug`/`Serialize` and is not redacted like
+    /// [`SecretStore`]'s own `Debug` impl is.
     pub fn inject_to_env(&self, env: &mut HashMap<String, String>) {
         for (env_var, value) in self.secrets.values() {
             env.insert(env_var.clone(), value.clone());
@@ -301,7 +308,8 @@ pub fn list_azure_secret_names(vault: &str, prefix: &str) -> Result<Vec<String>>
 /// into its own function so the filter shape can be unit-tested without
 /// invoking `az`/live Azure.
 fn azure_secret_list_jmespath_filter(prefix: &str) -> String {
-    format!("[?starts_with(name, '{prefix}')].name")
+    let escaped = prefix.replace('\'', "\\'");
+    format!("[?starts_with(name, '{escaped}')].name")
 }
 
 // ── SecureStageEnv ────────────────────────────────────────────────────────
@@ -649,6 +657,12 @@ mod tests {
     fn azure_secret_list_jmespath_filter_scopes_by_prefix() {
         let filter = azure_secret_list_jmespath_filter("config-global-");
         assert_eq!(filter, "[?starts_with(name, 'config-global-')].name");
+    }
+
+    #[test]
+    fn azure_secret_list_jmespath_filter_escapes_single_quotes() {
+        let filter = azure_secret_list_jmespath_filter("o'brien-");
+        assert_eq!(filter, r#"[?starts_with(name, 'o\'brien-')].name"#);
     }
 
     #[test]
