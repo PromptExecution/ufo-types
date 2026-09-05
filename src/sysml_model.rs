@@ -38,7 +38,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// MAY be a human-meaningful name (`"bus-3"`, `"agent.foo"`), a KerML
 /// qualified name (`Pkg::Sub::Item`), or a content / VCS hash
-/// (`sha256:…`, `git:<blob-sha>`) where an element needs a stable derived
+/// (`sha256:…`, `blake3:…`, `git:<blob-sha>`) where an element needs a stable derived
 /// identity. It is **never** a numeric id — a random integer breaks the
 /// byte-identical, git-diffable artifact model; a derived one is just a less
 /// legible string (kr0ki `DESIGN-NOTE-typed-model-layer.md` §2.4).
@@ -54,6 +54,23 @@ impl ElementId {
     /// Borrow the id as a string slice.
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    /// The recognized content-hash / VCS scheme prefixes an `ElementId` may carry.
+    pub const HASH_SCHEMES: &'static [&'static str] = &["sha256:", "blake3:", "git:"];
+
+    /// If this id is content-addressed, the scheme prefix it uses
+    /// (`"sha256:"`, `"blake3:"`, `"git:"`), else `None`.
+    pub fn content_hash_scheme(&self) -> Option<&'static str> {
+        Self::HASH_SCHEMES
+            .iter()
+            .copied()
+            .find(|p| self.0.starts_with(p))
+    }
+
+    /// Whether this id is a content / VCS hash rather than a name.
+    pub fn is_content_addressed(&self) -> bool {
+        self.content_hash_scheme().is_some()
     }
 }
 
@@ -519,6 +536,26 @@ mod tests {
         let json = serde_json::to_string(&id).unwrap();
         assert_eq!(json, r#""sha256:deadbeef""#);
         assert_eq!(serde_json::from_str::<ElementId>(&json).unwrap(), id);
+    }
+
+    #[test]
+    fn element_id_content_hash_scheme_detection() {
+        assert_eq!(eid("blake3:abc123").content_hash_scheme(), Some("blake3:"));
+        assert!(eid("blake3:abc123").is_content_addressed());
+
+        assert_eq!(
+            eid("sha256:deadbeef").content_hash_scheme(),
+            Some("sha256:")
+        );
+        assert!(eid("sha256:deadbeef").is_content_addressed());
+
+        assert_eq!(eid("git:deadbeef").content_hash_scheme(), Some("git:"));
+        assert!(eid("git:deadbeef").is_content_addressed());
+
+        assert_eq!(eid("bus-3").content_hash_scheme(), None);
+        assert!(!eid("bus-3").is_content_addressed());
+
+        assert_eq!(ElementId::HASH_SCHEMES.len(), 3);
     }
 
     #[test]
