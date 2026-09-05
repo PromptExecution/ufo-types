@@ -25,6 +25,21 @@
 //!   it out or renders it. Domain-generic; promoted from `systhread-core`
 //!   (narrower than that crate's own `iso_ir.rs` — layout/rendering and
 //!   lab-specific extraction stay there).
+//! - **Canonical UFO semantic graph** (`ontology`): the ontological middle
+//!   layer between `iso_ir`'s free-form transport floor and
+//!   `sysml_model`'s SysML-v2 viewpoints. `UfoRelation` — a closed,
+//!   `non_exhaustive` vocabulary of 25 canonical relations that normalizes
+//!   overloaded domain verbs (Kubernetes especially: "owns" / "manages" /
+//!   "controls" / "runs-on" / "selects" / "routes") via a lenient
+//!   `from_synonym`, with UFO-category signatures and a structural-vs-
+//!   occurrence split. `OntologicalEdge` — a typed, category-checked
+//!   semantic-graph edge (reusing `sysml_model::ElementId`), distinct from
+//!   the free-form `iso_ir::Edge`, carrying `TemporalExtent` (modeled
+//!   occurrence time) and deterministic `SourceAnchor` provenance. Pure
+//!   data — no traits. Consultant pipeline: `source → UFO semantic graph →
+//!   pattern recognizers → SysML viewpoints → renderer adapters`. The
+//!   Kubernetes verb-classification table itself lives downstream in
+//!   `kr0ki` docs — this crate stays domain-neutral. Not feature-gated.
 //! - **MBSE export** (`mbse`): `MbseExport` — renders any `Stereotyped`
 //!   type as a SysML v2 `part` usage, so evidence built from these types
 //!   (a `DaredProposal`, a `Decision`) doubles as a systems-engineering
@@ -129,6 +144,7 @@ pub mod iso_ir;
 pub mod mbse;
 pub mod model_capability;
 pub mod multi_model;
+pub mod ontology;
 #[cfg(feature = "python")]
 mod python;
 pub mod satisfies;
@@ -158,6 +174,7 @@ pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use model_capability::ModelCapability;
 pub use multi_model::{MockModelClient, ModelClient, MultiModelConfig, MultiModelVerifier};
+pub use ontology::{OntologicalEdge, SourceAnchor, TemporalExtent, UfoRelation};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };

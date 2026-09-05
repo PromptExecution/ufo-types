@@ -6,6 +6,48 @@ for reference without a full itemized history.
 
 ## [Unreleased]
 
+## [0.13.0] - pending tag
+
+Additive, non-breaking release. No public API was removed or changed
+incompatibly since `v0.12.0`.
+
+Added:
+- `ontology`: the canonical UFO-typed semantic-graph edge layer that sits
+  **above** `iso_ir::{Node, Edge}` (the free-form transport floor) and
+  **below** `sysml_model::{ElementKind, Relation}` (the SysML-v2 viewpoint
+  layer). Pure data — no traits. Not feature-gated. Domain-neutral: the
+  Kubernetes verb-classification table itself lives downstream in `kr0ki`
+  docs, not here.
+  - `UfoRelation` — a **closed** (`#[non_exhaustive]`), 25-variant
+    vocabulary of canonical ontological relations (`Specializes`,
+    `Instantiates`, `HasPart`, `MemberOf`, `ScopedBy`, `HostedBy`,
+    `Controls`, `Observes`, `Selects`, `ResolvesTo`, `Binds`, `Provides`,
+    `Requires`, `RoutesTo`, `ParticipatesIn`, `Initiates`, `Precedes`,
+    `Causes`, `Transitions`, `FlowsTo`, `Satisfies`, `Verifies`,
+    `GovernedBy`, `AuthorizedBy`, `TracesTo`) that normalizes overloaded
+    domain verbs, Kubernetes especially. Carries `ALL`, `canonical_name()`,
+    `category_signature()` (expected `(source, target)` UFO categories),
+    `permits()`, `is_structural()` / `is_occurrence()`, a **strict**
+    `FromStr` (canonical snake_case only, mirroring `sysml_model`), and a
+    **separate lenient** `from_synonym()` mapping the documented synonyms
+    (`"runs-on"` → `HostedBy`, `"lists/watches"` → `Observes`,
+    `"forwards-to"` → `RoutesTo`, …) for raw k8s / OpenAPI verb
+    normalization. Records the explicit non-conflations `Controls` ≠
+    `HasPart`, `HostedBy` ≠ `MemberOf`, `Requires` ≠ temporal invocation,
+    `RoutesTo` (configured topology) ≠ `FlowsTo` (occurrence).
+  - `OntologicalEdge` — the typed UFO semantic-graph edge: opaque `id`
+    (never numeric), `ElementId` source/target (reusing the `sysml_model`
+    newtype), a `UfoRelation`, an optional `TemporalExtent`, and a
+    `Vec<SourceAnchor>` of 0..n attestations. Helpers `endpoints()` and
+    `is_attested()`. Distinct from the free-form `iso_ir::Edge`.
+  - `TemporalExtent` — `#[non_exhaustive]` `Instant` / `Interval` /
+    `Ongoing`, `String` bounds (caller picks ISO-8601 / logical tick /
+    commit-ref). Modeled occurrence time, never a crate-generated
+    timestamp.
+  - `SourceAnchor` — `#[non_exhaustive]` deterministic provenance
+    (`RustSpan`, `SymbolPath`, `KermlQualifiedName`, `SysmlFile`,
+    `K8sObject`, `Vcs`, `Other`); no uuids, no wall-clock.
+
 ## [0.12.0] - pending tag
 
 Additive, non-breaking release. No public API was removed or changed
