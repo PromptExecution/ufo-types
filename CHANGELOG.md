@@ -6,6 +6,43 @@ for reference without a full itemized history.
 
 ## [Unreleased]
 
+## [0.12.0] - pending tag
+
+Additive, non-breaking release. No public API was removed or changed
+incompatibly since `v0.11.0`.
+
+Added:
+- `view`: `SysmlViewKind` — a **closed**, data-level enum of the standard
+  SysML **v2** `ViewDefinition` kinds (`Tree`, `General`, `Interconnection`,
+  `ActionFlow`, `StateTransition`, `Sequence`, `Case`, `Geometry`, `Grid`,
+  `Browser`), mirroring the normative `Views` package of the SysML v2
+  standard library. Carries `view_def_name()` (`sysml.library` PascalCase
+  id), `ALL`, `implemented_by_syson()` (the four Eclipse SysON view
+  providers), and a case/whitespace-insensitive `FromStr`. Not
+  feature-gated.
+- `sysml_model`: the closed, data-level SysML v2 / KerML abstract-syntax
+  layer that sits above `iso_ir::{Node, Edge}` and below any renderer.
+  Pure data — no traits, no viewpoint trait hierarchy (all explicitly
+  rejected in kr0ki `DESIGN-NOTE-typed-model-layer.md` §2.5):
+  - `ElementId` — opaque id newtype (`pub struct ElementId(pub String)`),
+    with `From<String>`/`From<&str>`/`Display`/`AsRef<str>`; never numeric
+    (§2.4).
+  - `ElementKind` — `#[non_exhaustive]`, 24 KerML/SysML-v2 abstract-syntax
+    kinds, def/usage paired (`is_definition`/`is_usage`/`usage_of`/
+    `definition_of`), with `kerml_name()`, `ALL`, and a case-insensitive
+    `FromStr`. No domain variants — those stay `iso_ir` `part_type` strings
+    (§2.1).
+  - `Relation` — `#[non_exhaustive]` struct-variant sum type over the
+    KerML/SysML-v2 relationship set (`FeatureMembership`, `Specialization`,
+    `Subsetting`, `Redefinition`, `Connection`, `Succession`, `Allocation`,
+    `Satisfy`, `Verify`, `Refine`, `Dependency`) plus the single `Domain`
+    escape hatch, with `endpoints()` and `kerml_name()` (§2.2).
+- `view` + `sysml_model` together are the SysML **v2** replacement for the
+  rejected SysML 1.x `DiagramKind` / `BehaviorDiagram` / `StructureDiagram`
+  / `UmlRelation` taxonomy; v2 is not a UML 2 derivative, so there is
+  deliberately no relationship-provenance enum and no behavior-vs-structure
+  grouping.
+
 ## [0.11.0] - pending tag
 
 Additive, non-breaking release. No public API was removed or changed

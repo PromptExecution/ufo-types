@@ -38,6 +38,15 @@
 //!   bespoke per-domain renderer. `scxml` is a document model, not a
 //!   runtime; it never replaces a domain's real transition-enforcement
 //!   logic. Domain-generic.
+//! - **SysML v2 model types** (`sysml_model`, `view`): `ElementKind` (a
+//!   closed, `non_exhaustive` set of KerML/SysML-v2 abstract-syntax kinds,
+//!   def/usage paired), `Relation` (data-level sum type over the KerML
+//!   relationship set plus one `Domain` escape hatch), `ElementId` (opaque
+//!   id newtype), and `SysmlViewKind` (closed enum of the standard SysML v2
+//!   `ViewDefinition` kinds). Pure data — no traits, no viewpoint trait
+//!   hierarchy. These are the SysML **v2** replacement for the rejected
+//!   SysML 1.x `DiagramKind` / `UmlRelation` taxonomy; v2 is not a UML 2
+//!   derivative. Not feature-gated. Domain-generic.
 //! - **ISO standard wrappers** (`iso`): `Lei` (ISO 17442), `Isin` (ISO
 //!   6166), `Currency` (ISO 4217 + common crypto tickers), `BankAccount`
 //!   (IBAN/BIC/LEI bundle), `FinancialInstrument` (IFRS 9). These ARE
@@ -128,6 +137,8 @@ pub mod statechart;
 pub mod stereotype;
 #[cfg(feature = "sysml")]
 pub mod sysml;
+pub mod sysml_model;
+pub mod view;
 
 // Re-export key types for convenience
 pub use capability::{
@@ -155,3 +166,5 @@ pub use statechart::{CANCELLED_STATE_ID, ooda_phases_to_statechart};
 pub use stereotype::{Stereotyped, UfoCategory, UfoStereotype};
 #[cfg(feature = "sysml")]
 pub use sysml::{SysmlV2Syntax, validate_sysml_v2};
+pub use sysml_model::{ElementId, ElementKind, Relation};
+pub use view::SysmlViewKind;
