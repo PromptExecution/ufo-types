@@ -6,6 +6,26 @@ for reference without a full itemized history.
 
 ## [Unreleased]
 
+## [0.14.0] - pending tag
+
+Additive, non-breaking release. No public API was removed or changed
+incompatibly since `v0.13.0`.
+
+Added:
+- `sysml_model`: `ElementId` now documents and recognizes `blake3:` as a
+  sanctioned content-hash scheme alongside `sha256:` and `git:`. The
+  newtype itself is unchanged — still `pub struct ElementId(pub String)`,
+  opaque; this is purely additive.
+  - `ElementId::HASH_SCHEMES` — the `&'static [&'static str]` of
+    recognized content-hash / VCS scheme prefixes (`"sha256:"`,
+    `"blake3:"`, `"git:"`).
+  - `ElementId::content_hash_scheme()` — the scheme prefix this id
+    carries if it is content-addressed, else `None`.
+  - `ElementId::is_content_addressed()` — whether this id is a content /
+    VCS hash rather than a human-meaningful name.
+  - The `ElementId` doc comment now lists `blake3:…` among the sanctioned
+    content / VCS hash forms; the **never numeric** rule is unchanged.
+
 ## [0.13.0] - pending tag
 
 Additive, non-breaking release. No public API was removed or changed
