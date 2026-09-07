@@ -13,6 +13,26 @@ evaluation. It defines:
 - **`Satisfies<C>` trait** (`satisfies`): The core constraint evaluation
   pattern — any domain type can implement `Satisfies<Constraint>` with
   deterministic, audit-ready results. Domain-generic.
+- **Graph IR** (`iso_ir`): `Node` / `Edge` — the free-form graph vocabulary a
+  domain uses to describe connectivity before anything lays it out or renders
+  it. The transport floor of the semantic-graph layer. Domain-generic;
+  promoted from `systhread-core`.
+- **Canonical UFO semantic graph** (`ontology`): the ontological middle layer
+  between `iso_ir` and `sysml_model`. `UfoRelation` — a closed
+  (`#[non_exhaustive]`), 25-variant vocabulary that normalizes overloaded
+  domain verbs (Kubernetes especially) via a lenient `from_synonym`;
+  `OntologicalEdge` — a typed, category-checked edge carrying `TemporalExtent`
+  and deterministic `SourceAnchor` provenance. Pure data, no traits, not
+  feature-gated. Domain-neutral — verb-classification tables live downstream
+  (`kr0ki`), never here.
+- **SysML v2 model types** (`sysml_model`, `view`): `ElementKind`, `Relation`,
+  `ElementId` (opaque, never numeric), `SysmlViewKind` — closed, data-level
+  KerML/SysML-v2 abstract syntax + the standard `ViewDefinition` kinds. The
+  SysML **v2** replacement for the rejected SysML 1.x `DiagramKind` /
+  `UmlRelation` taxonomy. Pure data, not feature-gated. Domain-generic.
+- **MBSE / statechart export** (`mbse`, `statechart`): render `Stereotyped`
+  types as SysML v2 `part` usages; bridge OODA state machines to W3C SCXML
+  (feature-gated). Domain-generic.
 - **Capability types** (`capability`): `Task`, `Attempt`, `ActionRecord`,
   `Episode`, `ReviewVerdict`, `Solution`, `TrainingCorpus`, `EnergyBudget`,
   etc. — generic agent-capability/OODA types. Domain-generic.
@@ -30,6 +50,50 @@ Any project needing UFO-grounded domain types and the `Satisfies<T>` pattern
 (e.g. `stereotype`, `satisfies`, `capability`, `dare`) can depend on this
 crate directly. Only `iso` carries genuinely finance/tax-domain-specific
 types.
+
+## Versioning & stability
+
+`ufo-types` is **pre-1.0**. Under Cargo's SemVer rules a `0.MINOR.PATCH` bump
+gives **no** compatibility guarantee: a `0.MINOR` release MAY remove, rename,
+narrow, or otherwise **reverse** capability. `CHANGELOG.md` entries that say
+"additive, non-breaking" state *intent* — a courtesy, not a contract — until
+`1.0.0`.
+
+Consume it accordingly:
+
+- **Pin exact.** `ufo-types = "=0.14.0"` (crates.io, once published) or
+  `ufo-types = { git = "https://github.com/PromptExecution/ufo-types", tag = "v0.14.0" }`.
+- **Read `CHANGELOG.md` before every bump.** It is the compatibility contract
+  until 1.0.
+- The **closed `#[non_exhaustive]` enums** (`UfoRelation`, `ElementKind`,
+  `Relation`, `SysmlViewKind`) may gain variants in a `0.MINOR` (match with a
+  `_ =>` arm). The **lenient** mappings (`UfoRelation::from_synonym`,
+  case-insensitive `FromStr`) may be **re-tuned** between `0.MINOR`s — do not
+  treat a specific synonym→variant mapping as stable; the strict canonical
+  `FromStr` is the stable surface.
+- The **"IDs are never numeric"** rule (`ElementId`, `OntologicalEdge.id`) is a
+  hard invariant and will not change.
+
+`1.0.0` will be cut once the semantic-graph layer has a downstream consumer in
+production (currently `kr0ki`'s model-ingestion path, planned).
+
+## Downstream consumers
+
+Projects cleared to depend on `ufo-types` directly (retire any vendored copy):
+
+| project | crates | modules used | pin |
+|---|---|---|---|
+| **b00t** ([elasticdotventures/_b00t_](https://github.com/elasticdotventures/_b00t_)) | `b00t-c0re-lib`, `b00t-lib-chat`, `b00t-cli` | `stereotype`, `satisfies`, `capability`, `dare` | `=0.14.0` |
+| **ledgrrr** ([PromptExecution/ledgrrr](https://github.com/PromptExecution/ledgrrr)) | `ledger-core`, `ledgerr-mcp` | `stereotype`, `satisfies`, `iso` | `=0.14.0` (vendored copy retired) |
+| **kr0ki** ([PromptExecution/kr0ki](https://github.com/PromptExecution/kr0ki)) | `kr0ki-core` | `iso_ir`, `ontology`, `sysml_model`, `view` — the model-ingestion path | `tag = "v0.14.0"` |
+| **m0ltis** ([elasticdotventures/moltis-b00t](https://github.com/elasticdotventures/moltis-b00t)) | *(planned)* provider→ufo-types lowering | `iso_ir`, `stereotype`, `sysml_model` | `tag = "v0.14.0"` |
+| **critter-keeper** ([app4dog](https://github.com/app4dog)) | — | `stereotype` | `=0.14.0` |
+| **cim-gridy** `mission-engine` | — | `stereotype`, `satisfies` | `=0.14.0` |
+
+Rule for consumers: `ufo-types` stays **domain-neutral**. Domain vocabularies
+(the Kubernetes verb table, tax/finance rules beyond `iso`, per-lab extraction)
+live in the consumer, not here. If you need a new canonical `UfoRelation`
+variant or `ElementKind`, open an issue — do not fork the enum.
 
 ## Architecture
 
