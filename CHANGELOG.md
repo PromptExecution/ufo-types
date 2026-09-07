@@ -4,9 +4,22 @@ All notable changes to `ufo-types` are documented here. This file starts
 with the `v0.11.0` release; earlier tags (`v0.10.1`, `v0.10.2`) are listed
 for reference without a full itemized history.
 
+**Versioning:** `ufo-types` is pre-1.0. Under Cargo SemVer a `0.x.y` bump
+carries *no* compatibility guarantee — a `0.MINOR` bump MAY remove, rename,
+or otherwise reverse capability. Entries below noting "additive, non-breaking"
+describe intent as a courtesy; they are not a contract until `1.0.0`. Pin an
+exact version (`ufo-types = "=0.14.0"`) or a git tag, and read this file
+before bumping. See README § "Versioning & stability".
+
 ## [Unreleased]
 
-## [0.14.0] - pending tag
+## [0.14.0] - 2026-09-07
+
+First tag of the **semantic-graph layer** (`iso_ir` → `ontology` →
+`sysml_model`/`view`). `v0.12.0`, `v0.13.0`, and `v0.14.0` are tagged
+together on this date from `main`; the layer landed incrementally in
+`#20`/`#21`/`#22` but was previously unreleased. Downstream projects
+(`b00t`, `ledgrrr`, `kr0ki`, `m0ltis`) may now pin `=0.14.0`.
 
 Additive, non-breaking release. No public API was removed or changed
 incompatibly since `v0.13.0`.
@@ -26,7 +39,7 @@ Added:
   - The `ElementId` doc comment now lists `blake3:…` among the sanctioned
     content / VCS hash forms; the **never numeric** rule is unchanged.
 
-## [0.13.0] - pending tag
+## [0.13.0] - 2026-09-07
 
 Additive, non-breaking release. No public API was removed or changed
 incompatibly since `v0.12.0`.
@@ -68,7 +81,7 @@ Added:
     (`RustSpan`, `SymbolPath`, `KermlQualifiedName`, `SysmlFile`,
     `K8sObject`, `Vcs`, `Other`); no uuids, no wall-clock.
 
-## [0.12.0] - pending tag
+## [0.12.0] - 2026-09-07
 
 Additive, non-breaking release. No public API was removed or changed
 incompatibly since `v0.11.0`.
@@ -105,7 +118,7 @@ Added:
   deliberately no relationship-provenance enum and no behavior-vs-structure
   grouping.
 
-## [0.11.0] - pending tag
+## [0.11.0] - 2026-08-30
 
 Additive, non-breaking release. No public API was removed or changed
 incompatibly since `v0.10.2`.
