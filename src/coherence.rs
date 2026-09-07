@@ -34,6 +34,20 @@ pub fn validate_numeric_agreement(values: &[f64], tolerance: f64) -> SatisfiesRe
     if values.len() < 2 {
         return SatisfiesResult::unknown();
     }
+    // IEEE-754: f64::min/f64::max silently drop NaN operands, and an all-NaN
+    // input folds to spread = -inf (<= any non-negative tolerance). Both
+    // cases would report Satisfied on undefined input — a false negative in
+    // a trust-checking primitive. Reject explicitly instead.
+    if !tolerance.is_finite() || tolerance < 0.0 {
+        return SatisfiesResult::violated(format!(
+            "tolerance must be a finite non-negative number, got {tolerance}"
+        ));
+    }
+    if values.iter().any(|v| !v.is_finite()) {
+        return SatisfiesResult::violated(
+            "input contains NaN or infinite values — cannot assess agreement".to_string(),
+        );
+    }
     let min = values.iter().cloned().fold(f64::INFINITY, f64::min);
     let max = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
     let spread = max - min;
@@ -90,6 +104,54 @@ mod tests {
             result.disposition,
             crate::satisfies::Disposition::Unknown
         ));
+    }
+
+    #[test]
+    fn nan_mixed_with_values_is_violated_not_satisfied() {
+        // Regression: f64::min/max silently drop NaN, so [100.0, NaN] folded
+        // to spread 0 and reported Satisfied.
+        let values = vec![100.0, f64::NAN];
+        let result = validate_numeric_agreement(&values, 0.05);
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Violated { .. }
+        ));
+    }
+
+    #[test]
+    fn all_nan_input_is_violated_not_satisfied() {
+        // Regression: all-NaN folded to spread -inf <= any tolerance → Satisfied.
+        let values = vec![f64::NAN, f64::NAN];
+        let result = validate_numeric_agreement(&values, 0.05);
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Violated { .. }
+        ));
+    }
+
+    #[test]
+    fn infinite_value_is_violated() {
+        let values = vec![100.0, f64::INFINITY];
+        let result = validate_numeric_agreement(&values, 0.05);
+        assert!(matches!(
+            result.disposition,
+            crate::satisfies::Disposition::Violated { .. }
+        ));
+    }
+
+    #[test]
+    fn negative_or_nan_tolerance_is_violated() {
+        let values = vec![100.0, 100.01];
+        for bad in [-1.0, f64::NAN, f64::INFINITY] {
+            let result = validate_numeric_agreement(&values, bad);
+            assert!(
+                matches!(
+                    result.disposition,
+                    crate::satisfies::Disposition::Violated { .. }
+                ),
+                "tolerance {bad} should be rejected"
+            );
+        }
     }
 
     #[test]
