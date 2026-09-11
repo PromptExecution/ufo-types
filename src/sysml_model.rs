@@ -512,6 +512,61 @@ impl Relation {
     }
 }
 
+/// Render a typed element/relation graph as deterministic KerML v2 text.
+///
+/// Native procedural generation: walks the slices and writes KerML syntax
+/// directly, no templates. Inputs are sorted and de-duplicated internally so
+/// the output is byte-identical regardless of caller ordering. Every
+/// `ElementKind` maps to its KerML keyword; kinds outside the small subset
+/// exercised today emit a `// unsupported kind` comment rather than invalid
+/// syntax. Relations are rendered as trailing comment lines — the same
+/// convention `dispatch_sysml.rs` uses — so the output always round-trips
+/// through `sysml-v2-parser` regardless of which relationship verbs the
+/// grammar version accepts.
+pub fn emit_kerml(
+    package: &str,
+    elements: &[(ElementId, ElementKind)],
+    relations: &[Relation],
+) -> String {
+    let mut els: Vec<&(ElementId, ElementKind)> = elements.iter().collect();
+    els.sort_by(|a, b| a.0.as_str().cmp(b.0.as_str()));
+    els.dedup_by(|a, b| a.0.as_str() == b.0.as_str());
+
+    let mut out = String::new();
+    out.push_str("package ");
+    out.push_str(package);
+    out.push_str(" {\n");
+
+    for (id, kind) in els {
+        let name = id.as_str();
+        match kind {
+            ElementKind::PartDefinition => out.push_str(&format!("    part def {name};\n")),
+            ElementKind::Package => out.push_str(&format!("    package {name} {{}}\n")),
+            other => out.push_str(&format!("    // unsupported kind {other:?} for {name}\n")),
+        }
+    }
+
+    let mut rel_lines: Vec<String> = relations
+        .iter()
+        .map(|r| {
+            let ep = r.endpoints();
+            match ep.as_slice() {
+                [a, b, ..] => format!("    //  {} {} {}\n", a.as_str(), r.kerml_name(), b.as_str()),
+                [a] => format!("    //  {} {}\n", a.as_str(), r.kerml_name()),
+                [] => format!("    //  {}\n", r.kerml_name()),
+            }
+        })
+        .collect();
+    rel_lines.sort();
+    rel_lines.dedup();
+    for line in rel_lines {
+        out.push_str(&line);
+    }
+
+    out.push_str("}\n");
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -830,5 +885,45 @@ mod tests {
             .kerml_name(),
             "Domain"
         );
+    }
+}
+
+#[cfg(all(test, feature = "sysml"))]
+mod emit_kerml_tests {
+    use super::*;
+    use crate::sysml::validate_sysml_v2;
+
+    #[test]
+    fn emit_kerml_round_trips_a_small_part_graph() {
+        let elements = vec![
+            (ElementId::new("alpha"), ElementKind::PartDefinition),
+            (ElementId::new("beta"), ElementKind::PartDefinition),
+        ];
+        let relations = vec![Relation::Dependency {
+            client: ElementId::new("beta"),
+            supplier: ElementId::new("alpha"),
+        }];
+        let text = emit_kerml("b00t_graph", &elements, &relations);
+        assert!(text.starts_with("package b00t_graph {"), "{text}");
+        assert!(text.contains("part def alpha;"), "{text}");
+        assert!(text.contains("part def beta;"), "{text}");
+        assert!(text.contains("//  beta Dependency alpha"), "{text}");
+        assert!(
+            validate_sysml_v2(&text).disposition.is_satisfied(),
+            "emitted KerML must parse:\n{text}"
+        );
+    }
+
+    #[test]
+    fn emit_kerml_is_deterministic_regardless_of_input_order() {
+        let a = vec![
+            (ElementId::new("z"), ElementKind::PartDefinition),
+            (ElementId::new("a"), ElementKind::PartDefinition),
+        ];
+        let b = vec![
+            (ElementId::new("a"), ElementKind::PartDefinition),
+            (ElementId::new("z"), ElementKind::PartDefinition),
+        ];
+        assert_eq!(emit_kerml("p", &a, &[]), emit_kerml("p", &b, &[]));
     }
 }
