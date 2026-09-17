@@ -40,6 +40,13 @@
 //!   pattern recognizers → SysML viewpoints → renderer adapters`. The
 //!   Kubernetes verb-classification table itself lives downstream in
 //!   `kr0ki` docs — this crate stays domain-neutral. Not feature-gated.
+//! - **`SysGraph` typed envelope** (`sysgraph`): a box-2 snapshot of
+//!   UFO-stereotyped [`OntologicalNode`](sysgraph::OntologicalNode)s plus
+//!   [`ontology::OntologicalEdge`]s — the full canonical semantic graph a
+//!   pattern recognizer produces and a viewpoint-lowering pass consumes.
+//!   serde JSON, round-trip tested (kr0ki `DESIGN-NOTE-typed-model-layer.md`
+//!   §2.6); no `SchemaVersion` field (§2.8). Domain-neutral, not
+//!   feature-gated.
 //! - **MBSE export** (`mbse`): `MbseExport` — renders any `Stereotyped`
 //!   type as a SysML v2 `part` usage, so evidence built from these types
 //!   (a `DaredProposal`, a `Decision`) doubles as a systems-engineering
@@ -166,6 +173,7 @@ pub mod satisfies;
 #[cfg(feature = "statechart")]
 pub mod statechart;
 pub mod stereotype;
+pub mod sysgraph;
 #[cfg(feature = "sysml")]
 pub mod sysml;
 pub mod sysml_model;
