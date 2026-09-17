@@ -14,6 +14,12 @@ before bumping. See README § "Versioning & stability".
 ## [Unreleased]
 
 ### Added
+- `sysgraph`: `SysGraph`/`OntologicalNode` — the box-2 typed envelope
+  holding a full snapshot of UFO-stereotyped nodes plus `ontology::
+  OntologicalEdge`s, per kr0ki `docs/TODO.md` box 2 and `DESIGN-NOTE-
+  typed-model-layer.md` §2.6/§2.8 (no `SchemaVersion` field). serde JSON,
+  round-trip tested; a `dangling_edges()` caller-invoked integrity check.
+  (`PromptExecution/kr0ki#roadmap-box-2`)
 - `pipeline_types`: `StageSpec`/`CapsuleProfile`/`StagePort`/`PipelineDag` and
   related types (port compatibility negotiation, error routing, DAG wiring
   with topological ordering and cycle detection), extracted from
