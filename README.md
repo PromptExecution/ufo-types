@@ -85,7 +85,7 @@ Projects cleared to depend on `ufo-types` directly (retire any vendored copy):
 |---|---|---|---|
 | **b00t** ([elasticdotventures/_b00t_](https://github.com/elasticdotventures/_b00t_)) | `b00t-c0re-lib`, `b00t-lib-chat`, `b00t-cli` | `stereotype`, `satisfies`, `capability`, `dare` | `=0.14.0` |
 | **ledgrrr** ([PromptExecution/ledgrrr](https://github.com/PromptExecution/ledgrrr)) | `ledger-core`, `ledgerr-mcp` | `stereotype`, `satisfies`, `iso` | `=0.14.0` (vendored copy retired) |
-| **kr0ki** ([PromptExecution/kr0ki](https://github.com/PromptExecution/kr0ki)) | `kr0ki-core` | `iso_ir`, `ontology`, `sysml_model`, `view` — the model-ingestion path | `tag = "v0.14.0"` |
+| **kr0ki** ([PromptExecution/kr0ki](https://github.com/PromptExecution/kr0ki)) | `kr0ki-core` | `iso_ir`, `ontology`, `sysml_model`, `view` — the model-ingestion path; `mbse::requirements` — the ReqIF/Flexo requirements semantic model, re-exported as `kr0ki_core::requirements` | `tag = "v0.15.0"` |
 | **m0ltis** ([elasticdotventures/moltis-b00t](https://github.com/elasticdotventures/moltis-b00t)) | *(planned)* provider→ufo-types lowering | `iso_ir`, `stereotype`, `sysml_model` | `tag = "v0.14.0"` |
 | **critter-keeper** ([app4dog](https://github.com/app4dog)) | — | `stereotype` | `=0.14.0` |
 | **cim-gridy** `mission-engine` | — | `stereotype`, `satisfies` | `=0.14.0` |

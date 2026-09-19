@@ -13,7 +13,19 @@ before bumping. See README § "Versioning & stability".
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-09-19
+
 ### Added
+- `mbse::requirements`: `RequirementGraph`/`Requirement`/`RequirementRelation`
+  and the five induced viewpoints (decomposition, traceability, impact,
+  behaviour, verification coverage), vendored from kr0ki-core's
+  `requirements` module (kr0ki M1 — the backend-neutral ReqIF/Flexo
+  requirements semantic model, previously a local kr0ki-core integration
+  seam). Preserves asserted/inferred/proposed relation authority and
+  explicit `promote_relation()`; emits no renderer source. kr0ki-core now
+  re-exports this module rather than defining its own copy.
+  (`PromptExecution/kr0ki` `HANDOFF-2026-09-19-reqif-flexo.md`,
+  lead-developer action #1)
 - `sysgraph`: `SysGraph`/`OntologicalNode` — the box-2 typed envelope
   holding a full snapshot of UFO-stereotyped nodes plus `ontology::
   OntologicalEdge`s, per kr0ki `docs/TODO.md` box 2 and `DESIGN-NOTE-

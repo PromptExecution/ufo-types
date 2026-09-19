@@ -37,6 +37,12 @@
 //! that pattern: it nests each child's own `to_sysml_v2()` output rather
 //! than re-deriving it.
 
+/// Backend-neutral requirements semantics (ReqIF/Flexo baselines, five
+/// induced viewpoints, promotion of inferred/proposed relations). Vendored
+/// from kr0ki-core 'requirements' module (kr0ki M1, 2026-09-19) as the
+/// canonical shared MBSE-requirements contract; kr0ki-core re-exports it.
+pub mod requirements;
+
 use serde::Serialize;
 use serde_json::Value;
 
