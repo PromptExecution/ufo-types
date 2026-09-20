@@ -158,6 +158,7 @@ pub mod capability;
 pub mod coherence;
 pub mod dare;
 pub mod data_format;
+pub mod dbt;
 pub mod dialect;
 pub mod iso;
 pub mod iso_ir;
