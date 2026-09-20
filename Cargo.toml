@@ -22,6 +22,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "2"
+# Required by dialect::Upgrade / DialectUrn (versioned wire-contract
+# decoding, forward-only minor/patch compat) — small, stable, always-on.
+semver = "1"
 anyhow = "1"
 schemars = { version = "0.8", features = ["derive"] }
 rpassword = "7"
@@ -47,12 +50,21 @@ pyo3 = { version = "0.27", features = ["extension-module"], optional = true }
 # renderers. Pinned to an exact version: small bus factor (2 contributors,
 # 0.x semver) per this epic's own crate-evaluation research.
 scxml = { version = "=0.2.2", optional = true }
+# ReqIF/ReqIFz parsing (kr0ki M2 -> ufo-types migration, 2026-09-20) — a
+# direct Rust port of the StrictDoc `reqif` reference implementation.
+# Optional, matching `sysml-v2-parser`/`scxml`'s existing posture: `reqrs`
+# is young (created 2026-05-28, pre-1.0, single apparent maintainer) and
+# this crate does not put young/small-bus-factor dependencies in its
+# default feature set. Consumers that want ReqIF ingestion opt in with
+# `features = ["reqif"]`; kr0ki-core does.
+reqrs = { version = "0.2.2", optional = true }
 
 [features]
 sysml = ["dep:sysml-v2-parser"]
 python = ["dep:pyo3", "sysml"]
 statechart = ["dep:scxml"]
 keyring = ["dep:keyring"]
+reqif = ["dep:reqrs"]
 
 [dev-dependencies]
 serde_json = "1.0"
