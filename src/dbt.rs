@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use serde::Deserialize;
 
 use crate::dialect::{DialectError, DialectUrn, Upgrade};
+use crate::ontology::{OntologicalEdge, UfoRelation};
 use crate::sysgraph::{OntologicalNode, SysGraph};
 use crate::sysml_model::ElementId;
 use crate::stereotype::UfoStereotype;
@@ -67,12 +68,54 @@ fn lower_nodes(manifest: &DbtManifest, graph: &mut SysGraph) {
     }
 }
 
+fn lower_edges(manifest: &DbtManifest, graph: &mut SysGraph) -> Result<(), DbtLiftError> {
+    let all_nodes = manifest.sources.values().chain(manifest.nodes.values());
+    for node in all_nodes {
+        for dep_id in &node.depends_on.nodes {
+            let dep_exists = manifest.nodes.contains_key(dep_id) || manifest.sources.contains_key(dep_id);
+            if !dep_exists {
+                return Err(DbtLiftError::DanglingDependency {
+                    from: node.unique_id.clone(),
+                    to: dep_id.clone(),
+                });
+            }
+            graph.push_edge(OntologicalEdge {
+                id: format!("dbt:{}->{}", node.unique_id, dep_id),
+                source: dbt_element_id(&node.unique_id),
+                target: dbt_element_id(dep_id),
+                relation: UfoRelation::Requires,
+                occurrence: None,
+                provenance: vec![],
+            });
+        }
+    }
+    Ok(())
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum DbtLiftError {
     #[error("could not parse manifest.json: {0}")]
     Malformed(#[from] serde_json::Error),
     #[error(transparent)]
     Dialect(#[from] DialectError),
+    #[error("{from} depends on {to}, which is not present in this manifest")]
+    DanglingDependency { from: String, to: String },
+}
+
+pub fn dbt_manifest_to_sysgraph(
+    manifest: &DbtManifest,
+    _config: &DbtLiftConfig,
+) -> Result<SysGraph, DbtLiftError> {
+    let mut graph = SysGraph::new();
+    lower_nodes(manifest, &mut graph);
+    lower_edges(manifest, &mut graph)?;
+    Ok(graph)
+}
+
+pub fn parse_and_lift(bytes: &[u8], config: &DbtLiftConfig) -> Result<SysGraph, DbtLiftError> {
+    let version = peek_dbt_schema_version(bytes)?;
+    let manifest = DbtManifest::upgrade(bytes, &version)?;
+    dbt_manifest_to_sysgraph(&manifest, config)
 }
 
 /// Extract the schema version dbt itself publishes in every manifest, e.g.
@@ -238,5 +281,69 @@ mod tests {
         let mut graph = SysGraph::new();
         lower_nodes(&manifest, &mut graph);
         assert!(graph.nodes.is_empty(), "test resource_type must not lower to a node");
+    }
+
+    #[test]
+    fn lowers_lineage_edges_with_requires_relation() {
+        let manifest: DbtManifest = serde_json::from_str(FIXTURE).unwrap();
+        let graph = dbt_manifest_to_sysgraph(&manifest, &DbtLiftConfig::default()).unwrap();
+
+        assert_eq!(graph.edges.len(), 2);
+        let stg_edge = graph
+            .edges
+            .iter()
+            .find(|e| e.source.0 == "dbt:model.jaffle_shop.stg_customers")
+            .unwrap();
+        assert_eq!(stg_edge.target.0, "dbt:source.jaffle_shop.raw.customers");
+        assert_eq!(stg_edge.relation, UfoRelation::Requires);
+        assert!(graph.dangling_edges().is_empty());
+    }
+
+    #[test]
+    fn dangling_dependency_is_a_typed_error_not_a_panic() {
+        let json = r#"{
+            "metadata": {"dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json"},
+            "nodes": {
+                "model.jaffle_shop.orphan": {
+                    "unique_id": "model.jaffle_shop.orphan",
+                    "resource_type": "model",
+                    "name": "orphan",
+                    "depends_on": {"nodes": ["model.jaffle_shop.does_not_exist"]}
+                }
+            }
+        }"#;
+        let manifest: DbtManifest = serde_json::from_str(json).unwrap();
+        let err = dbt_manifest_to_sysgraph(&manifest, &DbtLiftConfig::default()).unwrap_err();
+        assert!(matches!(err, DbtLiftError::DanglingDependency { .. }));
+    }
+
+    #[test]
+    fn parse_and_lift_round_trips_the_fixture_end_to_end() {
+        let graph = parse_and_lift(FIXTURE.as_bytes(), &DbtLiftConfig::default()).unwrap();
+        assert_eq!(graph.nodes.len(), 3);
+        assert_eq!(graph.edges.len(), 2);
+    }
+
+    #[test]
+    fn parse_and_lift_rejects_malformed_json() {
+        let err = parse_and_lift(b"{not json", &DbtLiftConfig::default()).unwrap_err();
+        assert!(matches!(err, DbtLiftError::Malformed(_)));
+    }
+
+    #[test]
+    fn parse_and_lift_on_zero_qualifying_nodes_is_an_empty_graph_not_an_error() {
+        let json = r#"{
+            "metadata": {"dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json"},
+            "nodes": {
+                "test.jaffle_shop.only_a_test": {
+                    "unique_id": "test.jaffle_shop.only_a_test",
+                    "resource_type": "test",
+                    "name": "only_a_test"
+                }
+            }
+        }"#;
+        let graph = parse_and_lift(json.as_bytes(), &DbtLiftConfig::default()).unwrap();
+        assert!(graph.nodes.is_empty());
+        assert!(graph.edges.is_empty());
     }
 }
