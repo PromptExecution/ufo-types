@@ -158,6 +158,7 @@ pub mod capability;
 pub mod coherence;
 pub mod dare;
 pub mod data_format;
+pub mod dialect;
 pub mod iso;
 pub mod iso_ir;
 pub mod mbse;
@@ -169,6 +170,8 @@ pub mod pipeline_secrets;
 pub mod pipeline_types;
 #[cfg(feature = "python")]
 mod python;
+#[cfg(feature = "reqif")]
+pub mod reqif;
 pub mod satisfies;
 #[cfg(feature = "statechart")]
 pub mod statechart;

@@ -12,6 +12,8 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use serde::{Deserialize, Serialize};
 
+use crate::stereotype::{Stereotyped, UfoStereotype};
+
 /// An immutable ReqIF/Flexo baseline identity.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BaselineIdentity {
@@ -61,6 +63,18 @@ pub struct Requirement {
     pub attributes: BTreeMap<String, String>,
     #[serde(default)]
     pub evidence: Vec<EvidenceRef>,
+}
+
+/// A `Requirement` is UFO-A rigid and sortal: an entity cannot lose its
+/// identity and remain a requirement (contrast a `Role`, which can be
+/// gained or lost without changing identity — see `stereotype.rs`'s
+/// classification table). `Kind`, not `SubKind`: this is the requirement
+/// vocabulary's own root type, not a further specialization of some other
+/// `Kind` already in the ontology.
+impl Stereotyped for Requirement {
+    fn ufo_stereotype(&self) -> UfoStereotype {
+        UfoStereotype::Kind("Requirement".to_string())
+    }
 }
 
 /// The asserted relation vocabulary shared by ReqIF, Flexo, and OPA adapters.
