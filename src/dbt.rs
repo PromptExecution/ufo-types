@@ -7,6 +7,9 @@ use std::collections::BTreeMap;
 use serde::Deserialize;
 
 use crate::dialect::{DialectError, DialectUrn, Upgrade};
+use crate::sysgraph::{OntologicalNode, SysGraph};
+use crate::sysml_model::ElementId;
+use crate::stereotype::UfoStereotype;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DbtManifestMetadata {
@@ -39,6 +42,29 @@ pub struct DbtManifest {
     pub nodes: BTreeMap<String, DbtNode>,
     #[serde(default)]
     pub sources: BTreeMap<String, DbtNode>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct DbtLiftConfig {}
+
+fn dbt_element_id(unique_id: &str) -> ElementId {
+    ElementId::new(format!("dbt:{unique_id}"))
+}
+
+fn lower_nodes(manifest: &DbtManifest, graph: &mut SysGraph) {
+    let qualifying = manifest
+        .sources
+        .values()
+        .chain(manifest.nodes.values().filter(|n| {
+            matches!(n.resource_type.as_str(), "model" | "seed" | "snapshot")
+        }));
+    for node in qualifying {
+        graph.push_node(OntologicalNode::with_label(
+            dbt_element_id(&node.unique_id),
+            UfoStereotype::Kind("DbtModel".into()),
+            node.name.clone(),
+        ));
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -181,5 +207,36 @@ mod tests {
                 ..
             }
         ));
+    }
+
+    #[test]
+    fn lowers_models_and_sources_but_not_other_resource_types() {
+        let manifest: DbtManifest = serde_json::from_str(FIXTURE).unwrap();
+        let mut graph = SysGraph::new();
+        lower_nodes(&manifest, &mut graph);
+
+        assert_eq!(graph.nodes.len(), 3, "2 models + 1 source");
+        let ids: Vec<&str> = graph.nodes.iter().map(|n| n.id.0.as_str()).collect();
+        assert!(ids.contains(&"dbt:model.jaffle_shop.stg_customers"));
+        assert!(ids.contains(&"dbt:model.jaffle_shop.customers"));
+        assert!(ids.contains(&"dbt:source.jaffle_shop.raw.customers"));
+    }
+
+    #[test]
+    fn excludes_non_qualifying_resource_types() {
+        let json = r#"{
+            "metadata": {"dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json"},
+            "nodes": {
+                "test.jaffle_shop.not_null_customers_id": {
+                    "unique_id": "test.jaffle_shop.not_null_customers_id",
+                    "resource_type": "test",
+                    "name": "not_null_customers_id"
+                }
+            }
+        }"#;
+        let manifest: DbtManifest = serde_json::from_str(json).unwrap();
+        let mut graph = SysGraph::new();
+        lower_nodes(&manifest, &mut graph);
+        assert!(graph.nodes.is_empty(), "test resource_type must not lower to a node");
     }
 }
