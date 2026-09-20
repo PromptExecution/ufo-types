@@ -8,9 +8,9 @@ use serde::Deserialize;
 
 use crate::dialect::{DialectError, DialectUrn, Upgrade};
 use crate::ontology::{OntologicalEdge, UfoRelation};
+use crate::stereotype::UfoStereotype;
 use crate::sysgraph::{OntologicalNode, SysGraph};
 use crate::sysml_model::ElementId;
-use crate::stereotype::UfoStereotype;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DbtManifestMetadata {
@@ -72,7 +72,8 @@ fn lower_edges(manifest: &DbtManifest, graph: &mut SysGraph) -> Result<(), DbtLi
     let all_nodes = manifest.sources.values().chain(manifest.nodes.values());
     for node in all_nodes {
         for dep_id in &node.depends_on.nodes {
-            let dep_exists = manifest.nodes.contains_key(dep_id) || manifest.sources.contains_key(dep_id);
+            let dep_exists =
+                manifest.nodes.contains_key(dep_id) || manifest.sources.contains_key(dep_id);
             if !dep_exists {
                 return Err(DbtLiftError::DanglingDependency {
                     from: node.unique_id.clone(),
