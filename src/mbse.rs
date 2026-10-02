@@ -41,6 +41,7 @@
 /// induced viewpoints, promotion of inferred/proposed relations). Vendored
 /// from kr0ki-core 'requirements' module (kr0ki M1, 2026-09-19) as the
 /// canonical shared MBSE-requirements contract; kr0ki-core re-exports it.
+pub mod assurance;
 pub mod requirements;
 
 use serde::Serialize;

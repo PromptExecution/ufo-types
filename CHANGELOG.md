@@ -34,6 +34,15 @@ before bumping. See README § "Versioning & stability".
   standard `RenderingUsage`s of the normative `Views` library, and
   `ModelIndex::select` -> `ViewSelection { elements, relations, unresolved }`
   (pure, deterministic, cycle-safe; relations feed an existing renderer).
+- `mbse::assurance`: the versioned assurance-thread profile over `RequirementGraph` —
+  `NodeKind` (source obligation, requirement, system element, control, verification case),
+  `SourceKind` (binding obligation / organisational policy / guidance), `ProfileRequirement`
+  (the nine required fields), `statement_issues` (deterministic statement lint),
+  `EvidenceRecord` (revision-bound), `CurrentRevisions` (global model + implementation
+  revision, **per-case** configuration digest), `Freshness`, and `analyze` -> `ThreadReport`
+  with an `Assurance` state per requirement (`Unsatisfied`, `SatisfiedUntested`, `Verified`,
+  `Failing`, `Stale`) and typed `GapKind`s. Keeps a satisfaction assertion (architectural)
+  apart from a verification result (revision-specific evidence).
 - `model_edit`: `ModelEdit::{HasA, IsA}` — qualified-name-addressed incremental
   edits (the SysMD notebook `hasA`/`isA` triple dialect), parse + print only.
 
