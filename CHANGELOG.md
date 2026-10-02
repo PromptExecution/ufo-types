@@ -13,6 +13,30 @@ before bumping. See README § "Versioning & stability".
 
 ## [Unreleased]
 
+### Added
+- `quantity`: `Dimension` (ISQ base exponents + `information` + `money`), `Unit`
+  (positive scale, optional offset, currency identity), finite `Interval`
+  arithmetic, `Quantity`, and `ExchangeRate`. Concept transferred from SysMD's
+  quantities/constraint values (`tukcps/SysMD`, Apache-2.0); no code copied, no
+  solver. **Currencies are distinct units, never implicitly convertible:**
+  `Quantity::add`/`convert_to` reject mixed currencies
+  (`QuantityError::CurrencyMismatch`); the only way across is an explicit
+  `ExchangeRate` carrying caller-supplied `as_of` + `source` (no clock read).
+  `°C`/`°F` convert but refuse arithmetic. Money is a *value*; attribution to a
+  cost center is a separate upstream concern and is not modeled here.
+- `verdict`: `RangeVerdict` (`Entailed` / `Narrowed` / `Inconsistent`),
+  `QuantityBound`, `check_bound`, and `Satisfies<QuantityBound> for Quantity`.
+  `Narrowed` maps to `Disposition::Unknown` (an over-approximation is not a
+  proof); `Disposition` is unchanged.
+- `view_definition`: `ViewDefinition` / `ViewUsage` as data with OMG-verbatim
+  vocabulary: `Expose` (`membership`, `members_of` = `A::*`, `all_under` =
+  `A::**`), conjunctive `ViewFilter { any_of }`, `RenderingChoice` over the four
+  standard `RenderingUsage`s of the normative `Views` library, and
+  `ModelIndex::select` -> `ViewSelection { elements, relations, unresolved }`
+  (pure, deterministic, cycle-safe; relations feed an existing renderer).
+- `model_edit`: `ModelEdit::{HasA, IsA}` — qualified-name-addressed incremental
+  edits (the SysMD notebook `hasA`/`isA` triple dialect), parse + print only.
+
 ## [0.15.0] - 2026-09-19
 
 ### Added

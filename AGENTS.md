@@ -16,6 +16,9 @@ agent/OODA capability types, and the **semantic-graph layer** (`iso_ir` →
 | **graph floor** | `iso_ir` | free-form `Node` / `Edge` transport | — | — |
 | **graph middle** | `ontology` | `UfoRelation` (closed, 25), `OntologicalEdge`, `TemporalExtent`, `SourceAnchor` | — | — |
 | **graph viewpoints** | `sysml_model`, `view` | `ElementKind`, `Relation`, `ElementId`, `SysmlViewKind` (all closed, data-level) | — | — |
+| graph views | `view_definition` | `ViewDefinition`/`ViewUsage`, `Expose`, `ViewFilter`, `RenderingChoice`; `ModelIndex::select` | pure selector | — |
+| values | `quantity`, `verdict` | `Dimension`/`Unit`/`Interval`/`Quantity`/`ExchangeRate`; `RangeVerdict`, `Satisfies<QuantityBound>` | yes | — |
+| edits | `model_edit` | `ModelEdit::{HasA, IsA}` (SysMD notebook dialect, parse/print only) | — | — |
 | export | `mbse`, `statechart` | SysML v2 `part` render; W3C SCXML bridge | — | `statechart` |
 | syntax check | `sysml` | `validate_sysml_v2` (wraps `sysml-v2-parser`) | — | `sysml` (also via `python`) |
 | domain | `iso` | `Lei`, `Isin`, `Currency`, `BankAccount`, `FinancialInstrument` | — | — |
