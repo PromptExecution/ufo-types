@@ -164,6 +164,7 @@ pub mod iso;
 pub mod iso_ir;
 pub mod mbse;
 pub mod model_capability;
+pub mod model_edit;
 pub mod multi_model;
 pub mod ontology;
 pub mod pipeline_flowctl;
@@ -171,6 +172,7 @@ pub mod pipeline_secrets;
 pub mod pipeline_types;
 #[cfg(feature = "python")]
 mod python;
+pub mod quantity;
 #[cfg(feature = "reqif")]
 pub mod reqif;
 pub mod satisfies;
@@ -181,7 +183,9 @@ pub mod sysgraph;
 #[cfg(feature = "sysml")]
 pub mod sysml;
 pub mod sysml_model;
+pub mod verdict;
 pub mod view;
+pub mod view_definition;
 
 // Re-export key types for convenience
 pub use capability::{
@@ -200,6 +204,7 @@ pub use iso::{BankAccount, Currency, FinancialInstrument, Isin, IsoValidationErr
 pub use iso_ir::{Edge, Node};
 pub use mbse::{MbseExport, indent_block, mbse_field_dump, sanitize_ident};
 pub use model_capability::ModelCapability;
+pub use model_edit::{ModelEdit, ModelEditError};
 pub use multi_model::{MockModelClient, ModelClient, MultiModelConfig, MultiModelVerifier};
 pub use ontology::{OntologicalEdge, SourceAnchor, TemporalExtent, UfoRelation};
 pub use pipeline_flowctl::{
@@ -214,6 +219,7 @@ pub use pipeline_types::{
     PipelineError, PortDirection, PortMediaType, ResourceFit, ResourceRequirements, StageEntry,
     StagePort, StageSpec, auto_insert_conversions, can_negotiate,
 };
+pub use quantity::{Dimension, ExchangeRate, Interval, Quantity, QuantityError, Unit};
 pub use satisfies::{
     Constraint, Disposition, EvidenceBridge, IsoAuditable, NodeId, Satisfies, SatisfiesResult,
 };
@@ -223,4 +229,9 @@ pub use stereotype::{Stereotyped, UfoCategory, UfoStereotype};
 #[cfg(feature = "sysml")]
 pub use sysml::{SysmlV2Syntax, validate_sysml_v2};
 pub use sysml_model::{ElementId, ElementKind, Relation};
+pub use verdict::{QuantityBound, RangeVerdict, check_bound};
 pub use view::SysmlViewKind;
+pub use view_definition::{
+    Expose, ExposeForm, ModelIndex, RenderingChoice, RenderingFamily, StandardRenderingUsage,
+    ViewDefinition, ViewError, ViewFilter, ViewSelection, ViewUsage,
+};
