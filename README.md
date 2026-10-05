@@ -129,6 +129,24 @@ platform, with git history preserved. It is consumed both inside `_b00t_`
 this small, dependency-light types crate without pulling in the full
 `_b00t_` monorepo (34 git submodules).
 
+## Revision wire schemas
+
+Generate JSON Schema from the optional canonical revision contracts:
+
+```sh
+cargo run --quiet --features revision --example revision-schema -- bundle > bundle.schema.json
+cargo run --quiet --features revision --example revision-schema -- receipt > receipt.schema.json
+```
+
+The selector defaults to `bundle`. Other selectors are `model`, `changeset`,
+`conflict`, `merge`, `checkpoint`, `status`, `expected-head`, `fidelity` and
+`capabilities`. Each document includes its referenced definitions and can be
+used by browser validators or JSON Schema to TypeScript generators. Unknown
+selectors and extra arguments fail without emitting a schema. Pin the producer
+commit alongside generated browser artifacts; do not maintain independent wire
+enum definitions. Schema validation describes JSON structure; hydration and
+service authorization still enforce semantic and project invariants.
+
 ## References
 
 - Guizzardi, G. (2005). _Ontological Foundations for Structural Conceptual

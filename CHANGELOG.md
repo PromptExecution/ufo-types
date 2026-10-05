@@ -14,6 +14,9 @@ before bumping. See README § "Versioning & stability".
 ## [0.16.0] - Unreleased
 
 ### Added
+- The `revision-schema` example exports bundle, model, changeset, conflict, merge,
+  receipt, checkpoint, status, expected-head, fidelity and capability JSON schemas
+  directly from the canonical Rust contracts for browser code generation.
 - Native `VerificationCaseDefinition` / `VerificationCaseUsage` element-kind pair,
   canonical metaclass/wire names and definition/usage helpers (issue #32). Older
   consumers reject these new wire variants; negotiate adapter capabilities before
