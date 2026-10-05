@@ -145,6 +145,10 @@ pub enum ElementKind {
     RequirementDefinition,
     /// `requirement` — a usage of a [`ElementKind::RequirementDefinition`].
     RequirementUsage,
+    /// `verification def` — a definition of a verification case.
+    VerificationCaseDefinition,
+    /// `verification` — a usage of a [`ElementKind::VerificationCaseDefinition`].
+    VerificationCaseUsage,
     /// `constraint def` — a definition of a boolean constraint.
     ConstraintDefinition,
     /// `constraint` — a usage of a [`ElementKind::ConstraintDefinition`].
@@ -182,6 +186,8 @@ impl ElementKind {
         ElementKind::StateUsage,
         ElementKind::RequirementDefinition,
         ElementKind::RequirementUsage,
+        ElementKind::VerificationCaseDefinition,
+        ElementKind::VerificationCaseUsage,
         ElementKind::ConstraintDefinition,
         ElementKind::ConstraintUsage,
         ElementKind::AllocationUsage,
@@ -212,6 +218,8 @@ impl ElementKind {
             ElementKind::StateUsage => "StateUsage",
             ElementKind::RequirementDefinition => "RequirementDefinition",
             ElementKind::RequirementUsage => "RequirementUsage",
+            ElementKind::VerificationCaseDefinition => "VerificationCaseDefinition",
+            ElementKind::VerificationCaseUsage => "VerificationCaseUsage",
             ElementKind::ConstraintDefinition => "ConstraintDefinition",
             ElementKind::ConstraintUsage => "ConstraintUsage",
             ElementKind::AllocationUsage => "AllocationUsage",
@@ -243,6 +251,8 @@ impl ElementKind {
             ElementKind::StateUsage => "state_usage",
             ElementKind::RequirementDefinition => "requirement_definition",
             ElementKind::RequirementUsage => "requirement_usage",
+            ElementKind::VerificationCaseDefinition => "verification_case_definition",
+            ElementKind::VerificationCaseUsage => "verification_case_usage",
             ElementKind::ConstraintDefinition => "constraint_definition",
             ElementKind::ConstraintUsage => "constraint_usage",
             ElementKind::AllocationUsage => "allocation_usage",
@@ -264,6 +274,7 @@ impl ElementKind {
                 | ElementKind::ActionDefinition
                 | ElementKind::StateDefinition
                 | ElementKind::RequirementDefinition
+                | ElementKind::VerificationCaseDefinition
                 | ElementKind::ConstraintDefinition
                 | ElementKind::ViewDefinition
                 | ElementKind::ViewpointDefinition
@@ -283,6 +294,7 @@ impl ElementKind {
                 | ElementKind::ActionUsage
                 | ElementKind::StateUsage
                 | ElementKind::RequirementUsage
+                | ElementKind::VerificationCaseUsage
                 | ElementKind::ConstraintUsage
                 | ElementKind::AllocationUsage
                 | ElementKind::ViewUsage
@@ -302,6 +314,7 @@ impl ElementKind {
             ElementKind::ActionDefinition => ElementKind::ActionUsage,
             ElementKind::StateDefinition => ElementKind::StateUsage,
             ElementKind::RequirementDefinition => ElementKind::RequirementUsage,
+            ElementKind::VerificationCaseDefinition => ElementKind::VerificationCaseUsage,
             ElementKind::ConstraintDefinition => ElementKind::ConstraintUsage,
             ElementKind::ViewDefinition => ElementKind::ViewUsage,
             _ => return None,
@@ -321,6 +334,7 @@ impl ElementKind {
             ElementKind::ActionUsage => ElementKind::ActionDefinition,
             ElementKind::StateUsage => ElementKind::StateDefinition,
             ElementKind::RequirementUsage => ElementKind::RequirementDefinition,
+            ElementKind::VerificationCaseUsage => ElementKind::VerificationCaseDefinition,
             ElementKind::ConstraintUsage => ElementKind::ConstraintDefinition,
             ElementKind::ViewUsage => ElementKind::ViewDefinition,
             _ => return None,
@@ -636,6 +650,8 @@ mod tests {
                 | ElementKind::StateUsage
                 | ElementKind::RequirementDefinition
                 | ElementKind::RequirementUsage
+                | ElementKind::VerificationCaseDefinition
+                | ElementKind::VerificationCaseUsage
                 | ElementKind::ConstraintDefinition
                 | ElementKind::ConstraintUsage
                 | ElementKind::AllocationUsage
@@ -645,7 +661,7 @@ mod tests {
                 | ElementKind::RenderingUsage => {}
             }
         }
-        assert_eq!(ElementKind::ALL.len(), 24);
+        assert_eq!(ElementKind::ALL.len(), 26);
     }
 
     #[test]
@@ -664,8 +680,8 @@ mod tests {
             .filter(|k| k.is_definition())
             .count();
         let usages = ElementKind::ALL.iter().filter(|k| k.is_usage()).count();
-        assert_eq!(defs, 10);
-        assert_eq!(usages, 13);
+        assert_eq!(defs, 11);
+        assert_eq!(usages, 14);
         // Package is neither; nothing is both.
         assert_eq!(defs + usages + 1, ElementKind::ALL.len());
         for &k in ElementKind::ALL {

@@ -61,6 +61,48 @@ fn a_fresh_project_keeps_the_same_model_digest() {
     );
 }
 
+#[test]
+fn native_verification_cases_survive_bundle_hydration_with_opaque_ids() {
+    let mut f = fixture();
+    let verification: PortableModel =
+        serde_json::from_str(include_str!("fixtures/portable_verification_cases.json")).unwrap();
+    f.model.elements.extend(verification.elements);
+    f.model.relations.extend(verification.relations);
+    let original = f.model.clone();
+    let bundle = PortableBundle::dehydrate(f.model, f.context, f.artifacts).unwrap();
+    // A previously negotiated adapter must explicitly establish support for the
+    // new metaclasses before this revision can be published without loss.
+    let capabilities: AdapterCapabilities =
+        serde_json::from_str(include_str!("fixtures/portable_adapter.json")).unwrap();
+    let report = bundle.adapter_fidelity(&capabilities);
+    assert!(report.require_lossless().is_err());
+    assert_eq!(report.issues.len(), 2);
+    assert!(
+        report
+            .issues
+            .iter()
+            .any(|i| i.path == "elements/verification-def")
+    );
+    assert!(
+        report
+            .issues
+            .iter()
+            .any(|i| i.path == "elements/verification-日本語")
+    );
+    let restored = PortableBundle::from_bytes(&bundle.to_bytes().unwrap()).unwrap();
+    assert_eq!(restored.hydrate().unwrap(), original);
+    assert_eq!(
+        restored.manifest.semantic_digest,
+        bundle.manifest.semantic_digest
+    );
+    let usage = restored.model.elements["verification-日本語"].kind;
+    assert_eq!(usage.kerml_name(), "VerificationCaseUsage");
+    assert_eq!(
+        usage.definition_of().unwrap().kerml_name(),
+        "VerificationCaseDefinition"
+    );
+}
+
 #[derive(Deserialize)]
 struct InvalidCase {
     pointer: String,

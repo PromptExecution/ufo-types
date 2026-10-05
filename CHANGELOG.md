@@ -14,6 +14,10 @@ before bumping. See README § "Versioning & stability".
 ## [0.16.0] - Unreleased
 
 ### Added
+- Native `VerificationCaseDefinition` / `VerificationCaseUsage` element-kind pair,
+  canonical metaclass/wire names and definition/usage helpers (issue #32). Older
+  consumers reject these new wire variants; negotiate adapter capabilities before
+  publication. This type addition does not establish real-server retention.
 - Opt-in `revision` portable model contract: distinct validated project/revision/operation identities,
   typed values and multiplicity, existing SysML relations and source anchors, deterministic
   SHA-256 bundles preserving original artifact bytes, and explicit fidelity/index status data.
