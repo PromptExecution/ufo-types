@@ -1,0 +1,624 @@
+[
+  {
+    "name": "no-op",
+    "ours": [],
+    "theirs": [],
+    "conflicts": [],
+    "merged": []
+  },
+  {
+    "name": "disjoint elements",
+    "ours": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/REQ-2/name",
+        "value": "updated requirement"
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      },
+      {
+        "pointer": "/elements/REQ-2/name",
+        "value": "updated requirement"
+      }
+    ]
+  },
+  {
+    "name": "same element independent fields",
+    "ours": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/controller/properties/label",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      },
+      {
+        "pointer": "/elements/controller/properties/label",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "independent properties",
+    "ours": [
+      {
+        "pointer": "/elements/controller/properties/label",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/controller/properties/new",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/elements/controller/properties/label",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      },
+      {
+        "pointer": "/elements/controller/properties/new",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "identical edit",
+    "ours": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      }
+    ]
+  },
+  {
+    "name": "same name conflict",
+    "ours": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "renamed"
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/controller/name",
+        "value": "different"
+      }
+    ],
+    "conflicts": [
+      "same_field"
+    ],
+    "merged": null
+  },
+  {
+    "name": "same property atomic conflict",
+    "ours": [
+      {
+        "pointer": "/elements/controller/properties/label",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "label"
+            }
+          ]
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/controller/properties/label",
+        "value": {
+          "type_ref": {
+            "kind": "string"
+          },
+          "multiplicity": {
+            "lower": 0,
+            "upper": 1
+          },
+          "values": [
+            {
+              "kind": "string",
+              "value": "other"
+            }
+          ]
+        }
+      }
+    ],
+    "conflicts": [
+      "same_field"
+    ],
+    "merged": null
+  },
+  {
+    "name": "delete versus modify",
+    "ours": [
+      {
+        "pointer": "/elements/active",
+        "value": null
+      },
+      {
+        "pointer": "/relations/enter",
+        "value": null
+      },
+      {
+        "pointer": "/relations/return",
+        "value": null
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/active/name",
+        "value": "modified"
+      }
+    ],
+    "conflicts": [
+      "delete_modify"
+    ],
+    "merged": null
+  },
+  {
+    "name": "removed relationship endpoint",
+    "ours": [
+      {
+        "pointer": "/elements/active",
+        "value": null
+      },
+      {
+        "pointer": "/relations/enter",
+        "value": null
+      },
+      {
+        "pointer": "/relations/return",
+        "value": null
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/relations/new-link",
+        "value": {
+          "id": "new-link",
+          "relation": {
+            "dependency": {
+              "client": "controller",
+              "supplier": "active"
+            }
+          },
+          "authority": "authored",
+          "anchors": [],
+          "rule": null,
+          "extensions": {}
+        }
+      }
+    ],
+    "conflicts": [
+      "semantic_violation"
+    ],
+    "merged": null
+  },
+  {
+    "name": "two concurrent containment owners",
+    "ours": [
+      {
+        "pointer": "/relations/owner-a",
+        "value": {
+          "id": "owner-a",
+          "relation": {
+            "feature_membership": {
+              "member": "idle",
+              "owner": "controller"
+            }
+          },
+          "authority": "authored",
+          "anchors": [],
+          "rule": null,
+          "extensions": {}
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/relations/owner-b",
+        "value": {
+          "id": "owner-b",
+          "relation": {
+            "feature_membership": {
+              "member": "idle",
+              "owner": "test"
+            }
+          },
+          "authority": "authored",
+          "anchors": [],
+          "rule": null,
+          "extensions": {}
+        }
+      }
+    ],
+    "conflicts": [
+      "semantic_violation"
+    ],
+    "merged": null
+  },
+  {
+    "name": "extensions independent keys",
+    "ours": [
+      {
+        "pointer": "/elements/controller/extensions/a",
+        "value": {
+          "keep": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/controller/extensions/b",
+        "value": true
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/elements/controller/extensions/a",
+        "value": {
+          "keep": [
+            "a"
+          ]
+        }
+      },
+      {
+        "pointer": "/elements/controller/extensions/b",
+        "value": true
+      }
+    ]
+  },
+  {
+    "name": "concurrent same identity creation",
+    "ours": [
+      {
+        "pointer": "/elements/new-state",
+        "value": {
+          "id": "new-state",
+          "kind": "state_usage",
+          "name": "Idle",
+          "properties": {},
+          "anchors": [],
+          "extensions": {}
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/new-state",
+        "value": {
+          "id": "new-state",
+          "kind": "state_usage",
+          "name": "different",
+          "properties": {},
+          "anchors": [],
+          "extensions": {}
+        }
+      }
+    ],
+    "conflicts": [
+      "concurrent_creation"
+    ],
+    "merged": null
+  },
+  {
+    "name": "identical concurrent creation",
+    "ours": [
+      {
+        "pointer": "/elements/new-state",
+        "value": {
+          "id": "new-state",
+          "kind": "state_usage",
+          "name": "Idle",
+          "properties": {},
+          "anchors": [],
+          "extensions": {}
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/elements/new-state",
+        "value": {
+          "id": "new-state",
+          "kind": "state_usage",
+          "name": "Idle",
+          "properties": {},
+          "anchors": [],
+          "extensions": {}
+        }
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/elements/new-state",
+        "value": {
+          "id": "new-state",
+          "kind": "state_usage",
+          "name": "Idle",
+          "properties": {},
+          "anchors": [],
+          "extensions": {}
+        }
+      }
+    ]
+  },
+  {
+    "name": "same concurrent deletion",
+    "ours": [
+      {
+        "pointer": "/relations/enter",
+        "value": null
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/relations/enter",
+        "value": null
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/relations/enter",
+        "value": null
+      }
+    ]
+  },
+  {
+    "name": "delete relation versus modified source evidence",
+    "ours": [
+      {
+        "pointer": "/relations/enter",
+        "value": null
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/relations/enter/anchors",
+        "value": [
+          {
+            "artifact": "src/controller.rs",
+            "anchor": {
+              "rust_span": {
+                "file": "src/controller.rs",
+                "line": 1,
+                "col": 1
+              }
+            },
+            "source_revision": "git:source-1"
+          }
+        ]
+      }
+    ],
+    "conflicts": [
+      "delete_modify"
+    ],
+    "merged": null
+  },
+  {
+    "name": "same relation different fields",
+    "ours": [
+      {
+        "pointer": "/relations/enter/anchors",
+        "value": [
+          {
+            "artifact": "src/controller.rs",
+            "anchor": {
+              "rust_span": {
+                "file": "src/controller.rs",
+                "line": 1,
+                "col": 1
+              }
+            },
+            "source_revision": "git:source-1"
+          }
+        ]
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/relations/enter/extensions/guard",
+        "value": "ready"
+      }
+    ],
+    "conflicts": [],
+    "merged": [
+      {
+        "pointer": "/relations/enter/anchors",
+        "value": [
+          {
+            "artifact": "src/controller.rs",
+            "anchor": {
+              "rust_span": {
+                "file": "src/controller.rs",
+                "line": 1,
+                "col": 1
+              }
+            },
+            "source_revision": "git:source-1"
+          }
+        ]
+      },
+      {
+        "pointer": "/relations/enter/extensions/guard",
+        "value": "ready"
+      }
+    ]
+  },
+  {
+    "name": "concurrent owning cycle",
+    "ours": [
+      {
+        "pointer": "/relations/own-idle",
+        "value": {
+          "id": "own-idle",
+          "relation": {
+            "feature_membership": {
+              "owner": "controller",
+              "member": "idle"
+            }
+          },
+          "authority": "authored",
+          "anchors": [],
+          "rule": null,
+          "extensions": {}
+        }
+      }
+    ],
+    "theirs": [
+      {
+        "pointer": "/relations/own-controller",
+        "value": {
+          "id": "own-controller",
+          "relation": {
+            "feature_membership": {
+              "owner": "idle",
+              "member": "controller"
+            }
+          },
+          "authority": "authored",
+          "anchors": [],
+          "rule": null,
+          "extensions": {}
+        }
+      }
+    ],
+    "conflicts": [
+      "semantic_violation"
+    ],
+    "merged": null
+  }
+]

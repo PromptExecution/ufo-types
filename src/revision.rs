@@ -12,6 +12,11 @@ use sha2::{Digest, Sha256};
 
 use crate::{ElementId, ElementKind, Relation, SourceAnchor};
 
+mod merge;
+pub use merge::{
+    ChangeSet, Conflict, ConflictKind, ConflictSubject, MergeOutcome, RecordChange, merge_models,
+};
+
 /// The first portable contract. Unknown versions require an explicit migration.
 pub const DIALECT: &str = "urn:b00t:dialect:ufo-types:revision:1.0.0";
 
@@ -308,6 +313,7 @@ fn endpoints(relation: &Relation) -> Vec<&ElementId> {
 
 impl PortableModel {
     pub fn validate(&self) -> Result<(), RevisionError> {
+        let mut owners = BTreeMap::new();
         for (key, element) in &self.elements {
             valid_identity("ElementId", key)?;
             if key != element.id.as_str() || self.relations.contains_key(key) {
@@ -358,6 +364,11 @@ impl PortableModel {
                     return Err(invalid(key, format!("missing endpoint {endpoint}")));
                 }
             }
+            if let Relation::FeatureMembership { owner, member } = &fact.relation {
+                if owners.insert(member.as_str(), owner.as_str()).is_some() {
+                    return Err(invalid(key, "member has multiple owning memberships"));
+                }
+            }
             if let Relation::Satisfy { requirement, .. } | Relation::Verify { requirement, .. } =
                 &fact.relation
             {
@@ -372,6 +383,16 @@ impl PortableModel {
                 if ends.len() < 2 {
                     return Err(invalid(key, "connection needs at least two ends"));
                 }
+            }
+        }
+        for member in owners.keys() {
+            let mut visited = std::collections::BTreeSet::new();
+            let mut current = *member;
+            while let Some(owner) = owners.get(current) {
+                if !visited.insert(current) {
+                    return Err(invalid(*member, "owning membership cycle"));
+                }
+                current = owner;
             }
         }
         Ok(())

@@ -19,6 +19,10 @@ before bumping. See README § "Versioning & stability".
   SHA-256 bundles preserving original artifact bytes, and explicit fidelity/index status data.
   Model validation and bundle hydration reject dangling references, missing/corrupt artifacts,
   incompatible schemas and undeclared data loss. No storage or transport implementation.
+- Revision `ChangeSet` and deterministic three-way merge: independently edited fields,
+  properties and extension keys merge; competing edits return typed conflict snapshots.
+  Whole-model revalidation rejects removed endpoints, multiple owners and owning cycles.
+  Change sets bind base/result digests and reject stale or altered preconditions.
 - `quantity`: `Dimension` (ISQ base exponents + `information` + `money`), `Unit`
   (positive scale, optional offset, currency identity), finite `Interval`
   arithmetic, `Quantity`, and `ExchangeRate`. Concept transferred from SysMD's
