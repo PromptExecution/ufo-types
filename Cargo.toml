@@ -1,6 +1,6 @@
 [package]
 name = "ufo-types"
-version = "0.15.0"
+version = "0.16.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Brian Horakh <brian@promptexecution.com>"]
@@ -58,6 +58,7 @@ scxml = { version = "=0.2.2", optional = true }
 # default feature set. Consumers that want ReqIF ingestion opt in with
 # `features = ["reqif"]`; kr0ki-core does.
 reqrs = { version = "0.2.2", optional = true }
+sha2 = { version = "0.10", optional = true }
 
 [features]
 sysml = ["dep:sysml-v2-parser"]
@@ -65,8 +66,13 @@ python = ["dep:pyo3", "sysml"]
 statechart = ["dep:scxml"]
 keyring = ["dep:keyring"]
 reqif = ["dep:reqrs"]
+revision = ["dep:sha2"]
 
 [dev-dependencies]
 serde_json = "1.0"
 tempfile = "3"
 toml = "0.8"
+
+[[example]]
+name = "revision-schema"
+required-features = ["revision"]

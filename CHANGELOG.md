@@ -11,9 +11,14 @@ describe intent as a courtesy; they are not a contract until `1.0.0`. Pin an
 exact version (`ufo-types = "=0.14.0"`) or a git tag, and read this file
 before bumping. See README § "Versioning & stability".
 
-## [Unreleased]
+## [0.16.0] - Unreleased
 
 ### Added
+- Opt-in `revision` portable model contract: distinct validated project/revision/operation identities,
+  typed values and multiplicity, existing SysML relations and source anchors, deterministic
+  SHA-256 bundles preserving original artifact bytes, and explicit fidelity/index status data.
+  Model validation and bundle hydration reject dangling references, missing/corrupt artifacts,
+  incompatible schemas and undeclared data loss. No storage or transport implementation.
 - `quantity`: `Dimension` (ISQ base exponents + `information` + `money`), `Unit`
   (positive scale, optional offset, currency identity), finite `Interval`
   arithmetic, `Quantity`, and `ExchangeRate`. Concept transferred from SysMD's

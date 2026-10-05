@@ -1,0 +1,1 @@
+["", "/absolute", "../escape", "a/../escape", "a//b", "a/./b", "C:/drive", "a\\b", "bad\u0000path"]
