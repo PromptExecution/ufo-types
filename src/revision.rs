@@ -426,7 +426,7 @@ impl PortableModel {
             | (TypeRef::Integer, TypedValue::Integer(_))
             | (TypeRef::Natural, TypedValue::Natural(_))
             | (TypeRef::String, TypedValue::String(_)) => true,
-            (TypeRef::Real, TypedValue::Real(v)) => v.parse::<f64>().is_ok_and(f64::is_finite),
+            (TypeRef::Real, TypedValue::Real(v)) => v.parse::<bigdecimal::BigDecimal>().is_ok(),
             (TypeRef::Timestamp, TypedValue::Timestamp(v)) => {
                 chrono::DateTime::parse_from_rfc3339(v).is_ok()
             }
@@ -500,6 +500,11 @@ pub struct AdapterCapabilities {
     pub relation_kinds: Vec<String>,
     pub preserves_extensions: bool,
     pub preserves_source_evidence: bool,
+    /// Missing capability claims fail closed, including older probe records.
+    #[serde(default)]
+    pub preserves_properties: bool,
+    #[serde(default)]
+    pub preserves_fact_authority: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -645,6 +650,13 @@ impl PortableBundle {
         }
         for (id, element) in &self.model.elements {
             let path = format!("elements/{id}");
+            if !capabilities.preserves_properties && !element.properties.is_empty() {
+                issues.push(FidelityIssue {
+                    path: format!("{path}/properties"),
+                    kind: FidelityKind::Dropped,
+                    reason: "adapter has not verified typed property preservation".into(),
+                });
+            }
             if !capabilities.element_kinds.contains(&element.kind) {
                 issues.push(FidelityIssue {
                     path: path.clone(),
@@ -669,6 +681,15 @@ impl PortableBundle {
         }
         for (id, fact) in &self.model.relations {
             let path = format!("relations/{id}");
+            if !capabilities.preserves_fact_authority {
+                issues.push(FidelityIssue {
+                    path: format!("{path}/authority"),
+                    kind: FidelityKind::Dropped,
+                    reason:
+                        "adapter has not verified authored/inferred/compiler authority preservation"
+                            .into(),
+                });
+            }
             // Relation uses externally tagged serde names; the variant is a single key.
             let encoded = serde_json::to_value(&fact.relation)
                 .expect("Relation has a finite string-only wire shape");
@@ -704,6 +725,12 @@ impl PortableBundle {
     pub fn to_bytes(&self) -> Result<Vec<u8>, RevisionError> {
         self.validate()?;
         canonical_bytes(self)
+    }
+
+    /// Bind complete context and exact source/attachment bytes for intent/idempotency checks.
+    /// The semantic digest alone intentionally excludes these inputs and is insufficient there.
+    pub fn bundle_digest(&self) -> Result<ArtifactDigest, RevisionError> {
+        Ok(ArtifactDigest::of(&self.to_bytes()?))
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, RevisionError> {

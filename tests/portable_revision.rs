@@ -262,6 +262,107 @@ fn strict_server_capabilities_report_exact_metadata_loss() {
 }
 
 #[test]
+fn properties_and_fact_authority_require_verified_capabilities() {
+    let mut capabilities: AdapterCapabilities =
+        serde_json::from_str(include_str!("fixtures/portable_adapter.json")).unwrap();
+    capabilities.preserves_properties = false;
+    capabilities.preserves_fact_authority = false;
+    let bundle = bundle();
+    let report = bundle.adapter_fidelity(&capabilities);
+    assert!(
+        report
+            .issues
+            .iter()
+            .any(|i| i.path == "elements/controller/properties")
+    );
+    for id in bundle.model.relations.keys() {
+        assert!(
+            report
+                .issues
+                .iter()
+                .any(|i| i.path == format!("relations/{id}/authority"))
+        );
+    }
+    assert!(report.require_lossless().is_err());
+    let mut old = serde_json::to_value(&capabilities).unwrap();
+    old.as_object_mut().unwrap().remove("preserves_properties");
+    old.as_object_mut()
+        .unwrap()
+        .remove("preserves_fact_authority");
+    let unprobed: AdapterCapabilities = serde_json::from_value(old).unwrap();
+    assert!(!unprobed.preserves_properties && !unprobed.preserves_fact_authority);
+}
+
+#[test]
+fn bundle_digest_binds_source_bytes_and_context_independently_of_model() {
+    let original = bundle();
+    let mut fixture = fixture();
+    let path = ArtifactPath::new("src/controller.rs").unwrap();
+    fixture.artifacts.get_mut(&path).unwrap().push(b' ');
+    let modified =
+        PortableBundle::dehydrate(fixture.model, fixture.context, fixture.artifacts).unwrap();
+    assert_eq!(
+        original.manifest.semantic_digest,
+        modified.manifest.semantic_digest
+    );
+    assert_ne!(
+        original.bundle_digest().unwrap(),
+        modified.bundle_digest().unwrap()
+    );
+    let mut other_project = original.clone();
+    other_project.manifest.context.project = ProjectId::new("project-2").unwrap();
+    assert_ne!(
+        original.bundle_digest().unwrap(),
+        other_project.bundle_digest().unwrap()
+    );
+    assert_eq!(
+        original.bundle_digest().unwrap(),
+        PortableBundle::from_bytes(&original.to_bytes().unwrap())
+            .unwrap()
+            .bundle_digest()
+            .unwrap()
+    );
+}
+
+#[test]
+fn exact_real_lexemes_round_trip_beyond_machine_float_range() {
+    #[derive(Deserialize)]
+    struct Case {
+        lexeme: String,
+        valid: bool,
+    }
+    let cases: Vec<Case> =
+        serde_json::from_str(include_str!("fixtures/portable_real_cases.json")).unwrap();
+    for case in cases {
+        let mut fixture = fixture();
+        let mut property = fixture.model.elements["controller"].properties["label"].clone();
+        property.type_ref = TypeRef::Real;
+        property.values = Some(vec![TypedValue::Real(case.lexeme.clone())]);
+        fixture
+            .model
+            .elements
+            .get_mut("controller")
+            .unwrap()
+            .properties
+            .insert("real".into(), property);
+        let result = PortableBundle::dehydrate(fixture.model, fixture.context, fixture.artifacts);
+        if case.valid {
+            let bundle = result.unwrap();
+            let hydrated = PortableBundle::from_bytes(&bundle.to_bytes().unwrap())
+                .unwrap()
+                .hydrate()
+                .unwrap();
+            assert_eq!(
+                hydrated.elements["controller"].properties["real"].values,
+                Some(vec![TypedValue::Real(case.lexeme)])
+            );
+        } else {
+            assert!(result.is_err(), "{}", case.lexeme);
+        }
+    }
+}
+
+#[test]
 fn external_types_require_a_pinned_library_and_parent_cannot_be_self() {
     let mut bundle = bundle();
     bundle.manifest.context.parent = Some(bundle.manifest.context.revision.clone());

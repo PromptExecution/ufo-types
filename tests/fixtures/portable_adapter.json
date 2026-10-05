@@ -3,5 +3,7 @@
   "element_kinds": ["requirement_definition", "requirement_usage", "action_definition", "action_usage", "state_usage"],
   "relation_kinds": ["satisfy", "verify", "dependency", "succession"],
   "preserves_extensions": true,
-  "preserves_source_evidence": true
+  "preserves_source_evidence": true,
+  "preserves_properties": true,
+  "preserves_fact_authority": true
 }

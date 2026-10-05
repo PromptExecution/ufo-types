@@ -23,6 +23,11 @@ before bumping. See README § "Versioning & stability".
   properties and extension keys merge; competing edits return typed conflict snapshots.
   Whole-model revalidation rejects removed endpoints, multiple owners and owning cycles.
   Change sets bind base/result digests and reject stale or altered preconditions.
+- Complete-bundle digest binds context and original artifact bytes separately from semantic
+  equivalence. Adapter capability checks fail closed on unverified typed property and fact
+  authority preservation, including older probe records without those claims.
+- Real values validate as arbitrary-precision decimals while retaining exact original lexemes;
+  valid values beyond binary floating-point range no longer fail hydration.
 - `quantity`: `Dimension` (ISQ base exponents + `information` + `money`), `Unit`
   (positive scale, optional offset, currency identity), finite `Interval`
   arithmetic, `Quantity`, and `ExchangeRate`. Concept transferred from SysMD's
