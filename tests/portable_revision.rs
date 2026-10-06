@@ -104,6 +104,96 @@ fn native_verification_cases_survive_bundle_hydration_with_opaque_ids() {
 }
 
 #[derive(Deserialize)]
+struct TypingFixture {
+    elements: BTreeMap<String, ModelElement>,
+    relations: BTreeMap<String, ModelRelation>,
+    invalid: Vec<TypingInvalid>,
+    retarget: ufo_types::Relation,
+}
+
+#[derive(Deserialize)]
+struct TypingInvalid {
+    field: String,
+    value: String,
+    reason: String,
+}
+
+fn typing_fixture() -> TypingFixture {
+    serde_json::from_str(include_str!("fixtures/portable_feature_typing.json")).unwrap()
+}
+
+#[test]
+fn native_feature_typing_preserves_identity_and_requires_verified_capability() {
+    let mut f = fixture();
+    let typing = typing_fixture();
+    f.model.elements.extend(typing.elements);
+    f.model.relations.extend(typing.relations.clone());
+    let b = PortableBundle::dehydrate(f.model, f.context, f.artifacts).unwrap();
+    for fact in typing.relations.values() {
+        assert_eq!(fact.relation.kerml_name(), "FeatureTyping");
+        assert_eq!(fact.relation.endpoints().len(), 2);
+        let value = serde_json::to_value(&fact.relation).unwrap();
+        assert!(value["feature_typing"].get("type").is_some());
+        assert!(value["feature_typing"].get("type_").is_none());
+    }
+    let mut capabilities: AdapterCapabilities =
+        serde_json::from_str(include_str!("fixtures/portable_adapter.json")).unwrap();
+    let report = b.adapter_fidelity(&capabilities);
+    assert_eq!(report.issues.len(), typing.relations.len());
+    assert!(
+        report
+            .issues
+            .iter()
+            .all(|i| i.kind == FidelityKind::Unsupported)
+    );
+    capabilities.relation_kinds.push("feature_typing".into());
+    b.adapter_fidelity(&capabilities)
+        .require_lossless()
+        .unwrap();
+    let restored = PortableBundle::from_bytes(&b.to_bytes().unwrap()).unwrap();
+    assert_eq!(restored.hydrate().unwrap(), b.model);
+    assert_eq!(restored.to_bytes().unwrap(), b.to_bytes().unwrap());
+}
+
+#[test]
+fn feature_typing_rejects_missing_or_wrong_endpoint_categories() {
+    let typing = typing_fixture();
+    for case in typing.invalid {
+        let mut f = fixture();
+        let mut value = serde_json::to_value(&typing.relations).unwrap();
+        value["typing-要求"]["relation"]["feature_typing"][case.field] = case.value.into();
+        let relations: BTreeMap<String, ModelRelation> = serde_json::from_value(value).unwrap();
+        f.model.relations.extend(relations);
+        let error = PortableBundle::dehydrate(f.model, f.context, f.artifacts).unwrap_err();
+        assert!(error.to_string().contains(&case.reason), "{error}");
+    }
+}
+
+#[test]
+fn deleting_a_type_used_by_a_concurrent_typing_edit_returns_conflict() {
+    let mut base = fixture().model;
+    let typing = typing_fixture();
+    base.elements.extend(typing.elements);
+    base.relations.extend(typing.relations);
+    let mut ours = base.clone();
+    // One editor removes an unused type while the other starts using it.
+    ours.elements.remove("alternate-action-type");
+    ours.validate().unwrap();
+    let mut theirs = base.clone();
+    theirs.relations.get_mut("typing-action").unwrap().relation = typing.retarget;
+    theirs.validate().unwrap();
+    let MergeOutcome::Conflicted { conflicts } = merge_models(&base, &ours, &theirs).unwrap()
+    else {
+        panic!("a merged typing edge must not point to a deleted definition");
+    };
+    assert!(
+        conflicts
+            .iter()
+            .any(|c| c.kind == ConflictKind::SemanticViolation)
+    );
+}
+
+#[derive(Deserialize)]
 struct InvalidCase {
     pointer: String,
     value: serde_json::Value,

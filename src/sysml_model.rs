@@ -389,6 +389,15 @@ impl std::str::FromStr for ElementKind {
 #[serde(rename_all = "snake_case")]
 #[non_exhaustive]
 pub enum Relation {
+    /// A feature usage is typed by a definition. This is distinct from
+    /// specialization of one type by another and from an attribute's value type.
+    FeatureTyping {
+        /// The typed usage.
+        feature: ElementId,
+        /// The definition supplying its type.
+        #[serde(rename = "type")]
+        type_: ElementId,
+    },
     /// A feature is owned by / a member of an owning element.
     FeatureMembership {
         /// The owning element.
@@ -483,6 +492,7 @@ impl Relation {
     /// its `ends` verbatim. `Domain`'s `kind` classifier is not an endpoint.
     pub fn endpoints(&self) -> Vec<&ElementId> {
         match self {
+            Relation::FeatureTyping { feature, type_ } => vec![feature, type_],
             Relation::FeatureMembership { owner, member } => vec![owner, member],
             Relation::Specialization { specific, general } => vec![specific, general],
             Relation::Subsetting { subset, superset } => vec![subset, superset],
@@ -510,6 +520,7 @@ impl Relation {
     /// symmetry only.
     pub const fn kerml_name(&self) -> &'static str {
         match self {
+            Relation::FeatureTyping { .. } => "FeatureTyping",
             Relation::FeatureMembership { .. } => "FeatureMembership",
             Relation::Specialization { .. } => "Specialization",
             Relation::Subsetting { .. } => "Subsetting",

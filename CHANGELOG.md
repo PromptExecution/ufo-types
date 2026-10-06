@@ -14,6 +14,10 @@ before bumping. See README § "Versioning & stability".
 ## [0.16.0] - Unreleased
 
 ### Added
+- Canonical `Relation::FeatureTyping` with independent feature/type endpoints and
+  stable relation identity (issue #33). Portable validation checks usage/definition
+  categories; adapters must additionally prove native subtype/library compatibility.
+  Older wire consumers reject the new variant; negotiate `feature_typing` support.
 - The `revision-schema` example exports bundle, model, changeset, conflict, merge,
   receipt, checkpoint, status, expected-head, fidelity and capability JSON schemas
   directly from the canonical Rust contracts for browser code generation.

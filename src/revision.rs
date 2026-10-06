@@ -289,26 +289,7 @@ fn invalid(path: impl Into<String>, reason: impl Into<String>) -> RevisionError 
 }
 
 fn endpoints(relation: &Relation) -> Vec<&ElementId> {
-    match relation {
-        Relation::FeatureMembership { owner, member } => vec![owner, member],
-        Relation::Specialization { specific, general } => vec![specific, general],
-        Relation::Subsetting { subset, superset } => vec![subset, superset],
-        Relation::Redefinition {
-            redefining,
-            redefined,
-        } => vec![redefining, redefined],
-        Relation::Connection { ends } => ends.iter().collect(),
-        Relation::Succession { source, target }
-        | Relation::Allocation { source, target }
-        | Relation::Domain { source, target, .. } => vec![source, target],
-        Relation::Satisfy {
-            requirement,
-            subject,
-        } => vec![requirement, subject],
-        Relation::Verify { requirement, by } => vec![requirement, by],
-        Relation::Refine { refined, refining } => vec![refined, refining],
-        Relation::Dependency { client, supplier } => vec![client, supplier],
-    }
+    relation.endpoints()
 }
 
 impl PortableModel {
@@ -363,6 +344,16 @@ impl PortableModel {
                 if !self.elements.contains_key(endpoint.as_str()) {
                     return Err(invalid(key, format!("missing endpoint {endpoint}")));
                 }
+            }
+            if let Relation::FeatureTyping { feature, type_ } = &fact.relation {
+                if !self.elements[feature.as_str()].kind.is_usage() {
+                    return Err(invalid(key, "typed feature endpoint is not a usage"));
+                }
+                if !self.elements[type_.as_str()].kind.is_definition() {
+                    return Err(invalid(key, "typing target endpoint is not a definition"));
+                }
+                // Category closure does not prove library/subtype compatibility;
+                // adapters must resolve and validate the actual selected types.
             }
             if let Relation::FeatureMembership { owner, member } = &fact.relation {
                 if owners.insert(member.as_str(), owner.as_str()).is_some() {

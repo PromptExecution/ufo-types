@@ -1,0 +1,27 @@
+{
+  "elements": {
+    "alternate-action-type": {
+      "id": "alternate-action-type", "kind": "action_definition", "name": "Alternate action",
+      "properties": {}, "anchors": [], "extensions": {}
+    }
+  },
+  "relations": {
+    "typing-要求": {
+      "id": "typing-要求",
+      "relation": {"feature_typing": {"feature": "REQ-日本語", "type": "REQ-2"}},
+      "authority": "authored", "anchors": [], "rule": null, "extensions": {}
+    },
+    "typing-action": {
+      "id": "typing-action",
+      "relation": {"feature_typing": {"feature": "test", "type": "controller"}},
+      "authority": "authored", "anchors": [], "rule": null, "extensions": {}
+    }
+  },
+  "invalid": [
+    {"field": "feature", "value": "missing-feature", "reason": "missing endpoint"},
+    {"field": "type", "value": "missing-definition", "reason": "missing endpoint"},
+    {"field": "feature", "value": "REQ-2", "reason": "typed feature endpoint is not a usage"},
+    {"field": "type", "value": "REQ-日本語", "reason": "typing target endpoint is not a definition"}
+  ],
+  "retarget": {"feature_typing": {"feature": "test", "type": "alternate-action-type"}}
+}
