@@ -19,6 +19,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "expected-head" => schemars::schema_for!(ExpectedHead),
         "fidelity" => schemars::schema_for!(FidelityReport),
         "capabilities" => schemars::schema_for!(AdapterCapabilities),
+        "query-request" => schemars::schema_for!(RevisionQueryRequest),
+        "query-response" => schemars::schema_for!(RevisionQueryResponse),
+        "graph-descriptor" => schemars::schema_for!(RevisionGraphDescriptor),
         _ => return Err(format!("unknown revision contract: {contract}").into()),
     };
     serde_json::to_writer_pretty(std::io::stdout(), &schema)?;

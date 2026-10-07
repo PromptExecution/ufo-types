@@ -14,6 +14,14 @@ before bumping. See README § "Versioning & stability".
 ## [0.16.0] - Unreleased
 
 ### Added
+- Shared revision discovery request/response, exact/minimum/current selectors,
+  immutable graph descriptors, explicit freshness/pending/unavailable outcomes
+  and typed RDF SELECT/ASK results. Decode validates identities, graph byte
+  digest consistency, term syntax, wire bounds and duplicate JSON keys. Pure
+  request matching cannot prove accepted ancestry, grants or graph completeness;
+  adapters remain responsible for those and evaluator cancellation. Optional
+  `oxiri`/`oxilangtag` reuse mature IRI/language validation under `revision`.
+  Schema selectors add `query-request`, `query-response`, `graph-descriptor`.
 - Canonical `Relation::FeatureTyping` with independent feature/type endpoints and
   stable relation identity (issue #33). Portable validation checks usage/definition
   categories; adapters must additionally prove native subtype/library compatibility.

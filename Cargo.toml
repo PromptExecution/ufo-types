@@ -60,6 +60,8 @@ scxml = { version = "=0.2.2", optional = true }
 reqrs = { version = "0.2.2", optional = true }
 sha2 = { version = "0.10", optional = true }
 bigdecimal = { version = "0.4", optional = true }
+oxiri = { version = "0.2.11", optional = true }
+oxilangtag = { version = "0.1.6", optional = true }
 
 [features]
 sysml = ["dep:sysml-v2-parser"]
@@ -67,7 +69,7 @@ python = ["dep:pyo3", "sysml"]
 statechart = ["dep:scxml"]
 keyring = ["dep:keyring"]
 reqif = ["dep:reqrs"]
-revision = ["dep:sha2", "dep:bigdecimal"]
+revision = ["dep:sha2", "dep:bigdecimal", "dep:oxiri", "dep:oxilangtag"]
 
 [dev-dependencies]
 serde_json = "1.0"

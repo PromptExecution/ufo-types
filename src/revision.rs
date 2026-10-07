@@ -13,9 +13,11 @@ use sha2::{Digest, Sha256};
 use crate::{ElementId, ElementKind, Relation, SourceAnchor};
 
 mod merge;
+mod query;
 pub use merge::{
     ChangeSet, Conflict, ConflictKind, ConflictSubject, MergeOutcome, RecordChange, merge_models,
 };
+pub use query::*;
 
 /// The first portable contract. Unknown versions require an explicit migration.
 pub const DIALECT: &str = "urn:b00t:dialect:ufo-types:revision:1.0.0";

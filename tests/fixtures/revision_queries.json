@@ -1,0 +1,397 @@
+{
+  "requests": [
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "exact",
+        "revision": "revision-old"
+      },
+      "query": "SELECT ?symbol ?label ?amount ?optional WHERE { ?symbol ?p ?label }",
+      "deadline_ms": 2500
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "minimum",
+        "checkpoint": {
+          "project": "project-日本語",
+          "revision": "revision-old",
+          "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+          "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "allow_older": false
+      },
+      "query": "ASK { ?s ?p ?o }",
+      "deadline_ms": 2500
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "current",
+        "allow_older": false
+      },
+      "query": "ASK { ?s ?p ?o }",
+      "deadline_ms": 1
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "current",
+        "allow_older": true
+      },
+      "query": "ASK { ?s ?p ?o }",
+      "deadline_ms": 60000
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "exact",
+        "revision": "revision-new"
+      },
+      "query": "SELECT ?symbol ?label ?amount ?optional WHERE { ?symbol ?p ?label }",
+      "deadline_ms": 2500
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "minimum",
+        "checkpoint": {
+          "project": "project-日本語",
+          "revision": "revision-old",
+          "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+          "graph_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "allow_older": false
+      },
+      "query": "ASK { ?s ?p ?o }",
+      "deadline_ms": 2500
+    }
+  ],
+  "responses": [
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "outcome": {
+        "kind": "completed",
+        "model_revision": "revision-old",
+        "indexed_revision": "revision-old",
+        "graph": {
+          "checkpoint": {
+            "project": "project-日本語",
+            "revision": "revision-old",
+            "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+            "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "projection_schema": "urn:b00t:projection:1",
+          "accepted_candidate_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "quad_count": 42
+        },
+        "freshness": "fresh",
+        "results": {
+          "kind": "select",
+          "variables": [
+            "symbol",
+            "label",
+            "amount",
+            "optional"
+          ],
+          "rows": [
+            {
+              "symbol": {
+                "kind": "iri",
+                "value": "urn:source:日本語"
+              },
+              "label": {
+                "kind": "language_literal",
+                "value": "検証\r\n",
+                "language": "ja"
+              },
+              "amount": {
+                "kind": "literal",
+                "value": "01.2300",
+                "datatype": "http://www.w3.org/2001/XMLSchema#decimal"
+              }
+            },
+            {
+              "symbol": {
+                "kind": "blank_node",
+                "label": "result-node-1"
+              },
+              "label": {
+                "kind": "literal",
+                "value": "",
+                "datatype": "http://www.w3.org/2001/XMLSchema#string"
+              }
+            },
+            {}
+          ]
+        }
+      }
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "outcome": {
+        "kind": "completed",
+        "model_revision": "revision-new",
+        "indexed_revision": "revision-old",
+        "graph": {
+          "checkpoint": {
+            "project": "project-日本語",
+            "revision": "revision-old",
+            "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+            "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "projection_schema": "urn:b00t:projection:1",
+          "accepted_candidate_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "quad_count": 42
+        },
+        "freshness": "stale",
+        "results": {
+          "kind": "ask",
+          "value": false
+        }
+      }
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "outcome": {
+        "kind": "pending",
+        "model_revision": "revision-new",
+        "requested_revision": "revision-old",
+        "available_graph": null
+      }
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "outcome": {
+        "kind": "unavailable",
+        "model_revision": null,
+        "requested_revision": "revision-old",
+        "reason": "missing_artifact"
+      }
+    }
+  ],
+  "request_response_cases": [
+    {
+      "request": 0,
+      "response": 0,
+      "valid": true
+    },
+    {
+      "request": 0,
+      "response": 1,
+      "valid": true
+    },
+    {
+      "request": 0,
+      "response": 2,
+      "valid": true
+    },
+    {
+      "request": 0,
+      "response": 3,
+      "valid": true
+    },
+    {
+      "request": 1,
+      "response": 1,
+      "valid": true
+    },
+    {
+      "request": 2,
+      "response": 0,
+      "valid": true
+    },
+    {
+      "request": 2,
+      "response": 1,
+      "valid": false
+    },
+    {
+      "request": 3,
+      "response": 1,
+      "valid": true
+    },
+    {
+      "request": 4,
+      "response": 1,
+      "valid": false
+    },
+    {
+      "request": 5,
+      "response": 1,
+      "valid": false
+    }
+  ],
+  "invalid_requests": [
+    {
+      "base": 0,
+      "pointer": "/query",
+      "value": "  ",
+      "reason": "empty query"
+    },
+    {
+      "base": 0,
+      "pointer": "/deadline_ms",
+      "value": 0,
+      "reason": "deadline"
+    },
+    {
+      "base": 0,
+      "pointer": "/deadline_ms",
+      "value": 60001,
+      "reason": "deadline"
+    },
+    {
+      "base": 0,
+      "pointer": "/actor",
+      "value": "spoofed",
+      "reason": "unknown field"
+    },
+    {
+      "base": 0,
+      "pointer": "/selector",
+      "value": {
+        "kind": "exact",
+        "revision": "revision-old",
+        "allow_older": true
+      },
+      "reason": "unknown field"
+    },
+    {
+      "base": 1,
+      "pointer": "/selector/checkpoint/project",
+      "value": "another-project",
+      "reason": "project mismatch"
+    },
+    {
+      "base": 1,
+      "pointer": "/selector/checkpoint/dialect",
+      "value": "future",
+      "reason": "unsupported portable dialect"
+    }
+  ],
+  "invalid_responses": [
+    {
+      "base": 0,
+      "pointer": "/outcome/freshness",
+      "value": "stale",
+      "reason": "freshness"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/indexed_revision",
+      "value": "different-revision",
+      "reason": "checkpoint revision"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/graph/checkpoint/project",
+      "value": "another-project",
+      "reason": "project mismatch"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/graph/artifact_digest",
+      "value": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "reason": "byte digest"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/graph/quad_count",
+      "value": 0,
+      "reason": "metadata"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/graph/projection_schema",
+      "value": "",
+      "reason": "projection_schema"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/results/variables",
+      "value": [
+        "symbol",
+        "symbol"
+      ],
+      "reason": "duplicate projected"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/results/rows/0/symbol/value",
+      "value": "relative/path",
+      "reason": "absolute IRI"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/results/rows/0/label/language",
+      "value": "not a language",
+      "reason": "BCP47"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/results/rows/1/label/datatype",
+      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+      "reason": "language tag"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/results/rows/1/symbol/label",
+      "value": "",
+      "reason": "blank node label"
+    },
+    {
+      "base": 0,
+      "pointer": "/outcome/results/rows/1/other",
+      "value": {
+        "kind": "iri",
+        "value": "urn:other"
+      },
+      "reason": "binding not in projected"
+    },
+    {
+      "base": 3,
+      "pointer": "/outcome/reason",
+      "value": "made_up_failure",
+      "reason": "unknown variant"
+    }
+  ],
+  "inconsistent_pairs": [
+    {
+      "response": 0,
+      "pointer": "/branch",
+      "value": "another-branch"
+    },
+    {
+      "response": 0,
+      "pointer": "/project",
+      "value": "another-project"
+    },
+    {
+      "response": 2,
+      "pointer": "/outcome/requested_revision",
+      "value": "another-revision"
+    },
+    {
+      "response": 3,
+      "pointer": "/outcome/requested_revision",
+      "value": null
+    }
+  ],
+  "duplicate_json": [
+    "{\"project\":\"p\",\"project\":\"q\",\"branch\":\"main\",\"selector\":{\"kind\":\"current\",\"allow_older\":false},\"query\":\"ASK {}\",\"deadline_ms\":1}",
+    "{\"project\":\"p\",\"branch\":\"main\",\"outcome\":{\"kind\":\"completed\",\"results\":{\"kind\":\"select\",\"variables\":[\"x\"],\"rows\":[{\"x\":1,\"x\":2}]}}}"
+  ]
+}
