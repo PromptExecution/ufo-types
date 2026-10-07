@@ -18,7 +18,7 @@
         "checkpoint": {
           "project": "project-日本語",
           "revision": "revision-old",
-          "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+          "dialect": "SysML-v2",
           "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
         "allow_older": false
@@ -64,8 +64,24 @@
         "checkpoint": {
           "project": "project-日本語",
           "revision": "revision-old",
-          "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+          "dialect": "SysML-v2",
           "graph_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "allow_older": false
+      },
+      "query": "ASK { ?s ?p ?o }",
+      "deadline_ms": 2500
+    },
+    {
+      "project": "project-日本語",
+      "branch": "main/α",
+      "selector": {
+        "kind": "minimum",
+        "checkpoint": {
+          "project": "project-日本語",
+          "revision": "revision-old",
+          "dialect": "domain-specific-opaque-dialect",
+          "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
         "allow_older": false
       },
@@ -85,7 +101,7 @@
           "checkpoint": {
             "project": "project-日本語",
             "revision": "revision-old",
-            "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+            "dialect": "SysML-v2",
             "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           },
           "projection_schema": "urn:b00t:projection:1",
@@ -146,7 +162,7 @@
           "checkpoint": {
             "project": "project-日本語",
             "revision": "revision-old",
-            "dialect": "urn:b00t:dialect:ufo-types:revision:1.0.0",
+            "dialect": "SysML-v2",
             "graph_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           },
           "projection_schema": "urn:b00t:projection:1",
@@ -278,8 +294,8 @@
     {
       "base": 1,
       "pointer": "/selector/checkpoint/dialect",
-      "value": "future",
-      "reason": "unsupported portable dialect"
+      "value": "",
+      "reason": "model dialect"
     }
   ],
   "invalid_responses": [

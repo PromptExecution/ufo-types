@@ -8,9 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::{
-    ArtifactDigest, BranchId, DIALECT, IndexCheckpoint, ProjectId, RevisionError, RevisionId,
-};
+use super::{ArtifactDigest, BranchId, IndexCheckpoint, ProjectId, RevisionError, RevisionId};
 
 /// Wire ceilings; services may impose smaller resource limits.
 pub const MAX_REVISION_QUERY_BYTES: usize = 65_536;
@@ -18,6 +16,7 @@ pub const MAX_REVISION_QUERY_DEADLINE_MS: u64 = 60_000;
 pub const MAX_REVISION_QUERY_ROWS: usize = 10_000;
 pub const MAX_REVISION_QUERY_VARIABLES: usize = 256;
 pub const MAX_REVISION_QUERY_RESULT_BYTES: usize = 4_194_304;
+pub const MAX_REVISION_QUERY_MODEL_DIALECT_BYTES: usize = 1_024;
 
 fn invalid(path: &str, reason: &str) -> RevisionError {
     RevisionError::InvalidModel {
@@ -30,8 +29,12 @@ fn checkpoint(value: &IndexCheckpoint, project: &ProjectId) -> Result<(), Revisi
     if &value.project != project {
         return Err(invalid("checkpoint/project", "project mismatch"));
     }
-    if value.dialect != DIALECT {
-        return Err(RevisionError::UnsupportedDialect(value.dialect.clone()));
+    super::valid_identity("model dialect", &value.dialect)?;
+    if value.dialect.len() > MAX_REVISION_QUERY_MODEL_DIALECT_BYTES {
+        return Err(invalid(
+            "checkpoint/dialect",
+            "model dialect byte limit exceeded",
+        ));
     }
     Ok(())
 }

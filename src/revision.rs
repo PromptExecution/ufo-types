@@ -890,6 +890,8 @@ pub fn canonical_bytes(value: &impl Serialize) -> Result<Vec<u8>, RevisionError>
 pub struct IndexCheckpoint {
     pub project: ProjectId,
     pub revision: RevisionId,
+    /// The model dialect (RevisionContext.model_dialect), not the portable
+    /// format's DIALECT URI. The owner verifies it against its project binding.
     pub dialect: String,
     pub graph_digest: ArtifactDigest,
 }

@@ -130,6 +130,13 @@ fn wire_bounds_fail_before_publication_or_successful_query_response() {
         .query
         .repeat(MAX_REVISION_QUERY_BYTES / request.query.len() + 1);
     assert!(request.validate().is_err());
+    let mut request: RevisionQueryRequest = serde_json::from_value(f.requests[1].clone()).unwrap();
+    if let RevisionQuerySelector::Minimum { checkpoint, .. } = &mut request.selector {
+        checkpoint.dialect = checkpoint
+            .dialect
+            .repeat(MAX_REVISION_QUERY_MODEL_DIALECT_BYTES / checkpoint.dialect.len() + 1);
+    }
+    assert!(request.validate().is_err());
     let response: RevisionQueryResponse = serde_json::from_value(f.responses[0].clone()).unwrap();
     let RevisionQueryOutcome::Completed { results, .. } = response.outcome else {
         panic!()

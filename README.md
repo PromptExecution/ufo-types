@@ -167,6 +167,9 @@ limits and must bound parsing, staging, concurrency and cancellation themselves.
 Graph descriptors bind the accepted candidate, projection schema, checkpoint
 and exact graph bytes; constructing one is not publication evidence. These pure
 types do not supply storage, an evaluator, authorization or revision ancestry.
+Checkpoint `dialect` is the opaque model dialect, such as `SysML-v2`, rather
+than the portable bundle format's `DIALECT` URI. Wire validation checks its
+identity and 1 KiB ceiling; the owner checks support and its project binding.
 
 ## References
 

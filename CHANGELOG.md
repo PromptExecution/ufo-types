@@ -14,6 +14,9 @@ before bumping. See README § "Versioning & stability".
 ## [0.16.0] - Unreleased
 
 ### Added
+- Checkpoint dialect documentation and query validation (issue #34) distinguish the opaque
+  model dialect (`SysML-v2`, for example) from the portable format URI; project
+  binding and supported-model checks remain adapter obligations.
 - Shared revision discovery request/response, exact/minimum/current selectors,
   immutable graph descriptors, explicit freshness/pending/unavailable outcomes
   and typed RDF SELECT/ASK results. Decode validates identities, graph byte
