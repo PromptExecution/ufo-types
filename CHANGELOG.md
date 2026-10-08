@@ -14,6 +14,13 @@ before bumping. See README § "Versioning & stability".
 ## [0.16.0] - Unreleased
 
 ### Added
+- Optional `reqif-archive` byte-preserving ReqIFz intake with fixed compressed,
+  expanded, per-entry, count and path bounds; rejects duplicate/unsafe paths,
+  symlinks, malformed metadata and CRC failures. Streaming rawzip metadata
+  validation precedes zip 2.x decompression because its name index collapses
+  duplicate entries. Original archive bytes, entry order and attachment bytes
+  remain available; XML/schema validation, typed projection and edited export
+  remain source-adapter responsibilities.
 - Checkpoint dialect documentation and query validation (issue #34) distinguish the opaque
   model dialect (`SysML-v2`, for example) from the portable format URI; project
   binding and supported-model checks remain adapter obligations.

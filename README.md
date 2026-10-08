@@ -129,6 +129,17 @@ platform, with git history preserved. It is consumed both inside `_b00t_`
 this small, dependency-light types crate without pulling in the full
 `_b00t_` monorepo (34 git submodules).
 
+## ReqIFz source intake
+
+The optional `reqif-archive` feature exposes
+`reqif::archive::ReqIfArchive::from_bytes` for bounded ReqIFz intake. It retains
+the original archive and non-directory entry bytes/order, with SHA-256 digest
+helpers. Limits are 8 MiB compressed, 16 MiB per entry, 32 MiB expanded, 1024
+entries and 1024-byte portable paths. It rejects duplicate names, file/directory
+aliases, unsafe paths, symlinks and CRC failures. Nested archives remain opaque
+attachments. A `.reqif` filename classifies a document without claiming valid
+XML: schema validation, typed mapping and edited export are still required.
+
 ## Revision wire schemas
 
 Generate JSON Schema from the optional canonical revision contracts:
