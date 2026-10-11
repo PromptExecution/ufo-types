@@ -164,6 +164,18 @@ pub enum ElementKind {
     ViewpointDefinition,
     /// `render` — a usage of a rendering.
     RenderingUsage,
+    /// KerML Activity `DecisionNode` — a control-flow diamond that routes to
+    /// exactly one of its outgoing `Succession` edges based on guards.
+    DecisionNode,
+    /// KerML Activity `ForkNode` — splits a single incoming flow into multiple
+    /// concurrent outgoing flows (all successors execute in parallel).
+    ForkNode,
+    /// KerML Activity `JoinNode` — synchronises multiple concurrent incoming
+    /// flows into a single outgoing flow (waits for all).
+    JoinNode,
+    /// KerML Activity `MergeNode` — merges multiple alternative (non-concurrent)
+    /// incoming flows into a single outgoing flow without synchronisation.
+    MergeNode,
 }
 
 impl ElementKind {
@@ -195,6 +207,10 @@ impl ElementKind {
         ElementKind::ViewUsage,
         ElementKind::ViewpointDefinition,
         ElementKind::RenderingUsage,
+        ElementKind::DecisionNode,
+        ElementKind::ForkNode,
+        ElementKind::JoinNode,
+        ElementKind::MergeNode,
     ];
 
     /// The KerML / SysML v2 abstract-syntax metaclass name, e.g.
@@ -227,6 +243,10 @@ impl ElementKind {
             ElementKind::ViewUsage => "ViewUsage",
             ElementKind::ViewpointDefinition => "ViewpointDefinition",
             ElementKind::RenderingUsage => "RenderingUsage",
+            ElementKind::DecisionNode => "DecisionNode",
+            ElementKind::ForkNode => "ForkNode",
+            ElementKind::JoinNode => "JoinNode",
+            ElementKind::MergeNode => "MergeNode",
         }
     }
 
@@ -260,6 +280,10 @@ impl ElementKind {
             ElementKind::ViewUsage => "view_usage",
             ElementKind::ViewpointDefinition => "viewpoint_definition",
             ElementKind::RenderingUsage => "rendering_usage",
+            ElementKind::DecisionNode => "decision_node",
+            ElementKind::ForkNode => "fork_node",
+            ElementKind::JoinNode => "join_node",
+            ElementKind::MergeNode => "merge_node",
         }
     }
 
@@ -302,9 +326,23 @@ impl ElementKind {
         )
     }
 
+    /// Whether this kind is a KerML Activity control-flow node
+    /// (`DecisionNode`, `ForkNode`, `JoinNode`, `MergeNode`).
+    /// Control nodes have no `*Definition` / `*Usage` pairing.
+    pub const fn is_control_node(self) -> bool {
+        matches!(
+            self,
+            ElementKind::DecisionNode
+                | ElementKind::ForkNode
+                | ElementKind::JoinNode
+                | ElementKind::MergeNode
+        )
+    }
+
     /// The paired `*Usage` for a `*Definition`, where both are members of
-    /// this enum. `None` for usages, for `Package`, and for
-    /// `ViewpointDefinition` (no `ViewpointUsage` member).
+    /// this enum. `None` for usages, for `Package`, for
+    /// `ViewpointDefinition` (no `ViewpointUsage` member), and for control
+    /// nodes.
     pub const fn usage_of(self) -> Option<ElementKind> {
         Some(match self {
             ElementKind::PartDefinition => ElementKind::PartUsage,
@@ -669,10 +707,14 @@ mod tests {
                 | ElementKind::ViewDefinition
                 | ElementKind::ViewUsage
                 | ElementKind::ViewpointDefinition
-                | ElementKind::RenderingUsage => {}
+                | ElementKind::RenderingUsage
+                | ElementKind::DecisionNode
+                | ElementKind::ForkNode
+                | ElementKind::JoinNode
+                | ElementKind::MergeNode => {}
             }
         }
-        assert_eq!(ElementKind::ALL.len(), 26);
+        assert_eq!(ElementKind::ALL.len(), 30);
     }
 
     #[test]
@@ -691,10 +733,15 @@ mod tests {
             .filter(|k| k.is_definition())
             .count();
         let usages = ElementKind::ALL.iter().filter(|k| k.is_usage()).count();
+        let control = ElementKind::ALL
+            .iter()
+            .filter(|k| k.is_control_node())
+            .count();
         assert_eq!(defs, 11);
         assert_eq!(usages, 14);
-        // Package is neither; nothing is both.
-        assert_eq!(defs + usages + 1, ElementKind::ALL.len());
+        assert_eq!(control, 4);
+        // Package is neither; control nodes are neither; nothing is both.
+        assert_eq!(defs + usages + 1 + control, ElementKind::ALL.len());
         for &k in ElementKind::ALL {
             assert!(!(k.is_definition() && k.is_usage()), "{k:?} is both");
         }
