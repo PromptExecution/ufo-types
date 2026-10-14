@@ -11,9 +11,52 @@ describe intent as a courtesy; they are not a contract until `1.0.0`. Pin an
 exact version (`ufo-types = "=0.14.0"`) or a git tag, and read this file
 before bumping. See README § "Versioning & stability".
 
-## [Unreleased]
+## [0.16.0] - Unreleased
 
 ### Added
+- Optional `reqif-archive` byte-preserving ReqIFz intake with fixed compressed,
+  expanded, per-entry, count and path bounds; rejects duplicate/unsafe paths,
+  symlinks, malformed metadata and CRC failures. Streaming rawzip metadata
+  validation precedes zip 2.x decompression because its name index collapses
+  duplicate entries. Original archive bytes, entry order and attachment bytes
+  remain available; XML/schema validation, typed projection and edited export
+  remain source-adapter responsibilities.
+- Checkpoint dialect documentation and query validation (issue #34) distinguish the opaque
+  model dialect (`SysML-v2`, for example) from the portable format URI; project
+  binding and supported-model checks remain adapter obligations.
+- Shared revision discovery request/response, exact/minimum/current selectors,
+  immutable graph descriptors, explicit freshness/pending/unavailable outcomes
+  and typed RDF SELECT/ASK results. Decode validates identities, graph byte
+  digest consistency, term syntax, wire bounds and duplicate JSON keys. Pure
+  request matching cannot prove accepted ancestry, grants or graph completeness;
+  adapters remain responsible for those and evaluator cancellation. Optional
+  `oxiri`/`oxilangtag` reuse mature IRI/language validation under `revision`.
+  Schema selectors add `query-request`, `query-response`, `graph-descriptor`.
+- Canonical `Relation::FeatureTyping` with independent feature/type endpoints and
+  stable relation identity (issue #33). Portable validation checks usage/definition
+  categories; adapters must additionally prove native subtype/library compatibility.
+  Older wire consumers reject the new variant; negotiate `feature_typing` support.
+- The `revision-schema` example exports bundle, model, changeset, conflict, merge,
+  receipt, checkpoint, status, expected-head, fidelity and capability JSON schemas
+  directly from the canonical Rust contracts for browser code generation.
+- Native `VerificationCaseDefinition` / `VerificationCaseUsage` element-kind pair,
+  canonical metaclass/wire names and definition/usage helpers (issue #32). Older
+  consumers reject these new wire variants; negotiate adapter capabilities before
+  publication. This type addition does not establish real-server retention.
+- Opt-in `revision` portable model contract: distinct validated project/revision/operation identities,
+  typed values and multiplicity, existing SysML relations and source anchors, deterministic
+  SHA-256 bundles preserving original artifact bytes, and explicit fidelity/index status data.
+  Model validation and bundle hydration reject dangling references, missing/corrupt artifacts,
+  incompatible schemas and undeclared data loss. No storage or transport implementation.
+- Revision `ChangeSet` and deterministic three-way merge: independently edited fields,
+  properties and extension keys merge; competing edits return typed conflict snapshots.
+  Whole-model revalidation rejects removed endpoints, multiple owners and owning cycles.
+  Change sets bind base/result digests and reject stale or altered preconditions.
+- Complete-bundle digest binds context and original artifact bytes separately from semantic
+  equivalence. Adapter capability checks fail closed on unverified typed property and fact
+  authority preservation, including older probe records without those claims.
+- Real values validate as arbitrary-precision decimals while retaining exact original lexemes;
+  valid values beyond binary floating-point range no longer fail hydration.
 - `quantity`: `Dimension` (ISQ base exponents + `information` + `money`), `Unit`
   (positive scale, optional offset, currency identity), finite `Interval`
   arithmetic, `Quantity`, and `ExchangeRate`. Concept transferred from SysMD's

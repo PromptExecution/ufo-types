@@ -1,0 +1,21 @@
+[
+  {"name":"unicode_original_order","files":[{"path":"附件.bin","bytes":[0,255,13,10]},{"path":"模型.reqif","bytes":[60,82,69,81,45,73,70,47,62]}]},
+  {"name":"opaque_nested_attachment","files":[{"path":"model.REQIF","bytes":[60,82,69,81,45,73,70,47,62]},{"path":"nested.zip","bytes":[80,75,3,4]}]},
+  {"name":"directory","files":[{"path":"folder/","bytes":[]},{"path":"folder/model.reqif","bytes":[60,82,69,81,45,73,70,47,62]}]},
+  {"name":"parent_path","files":[{"path":"../model.reqif","bytes":[]}],"error":"archive path"},
+  {"name":"absolute_path","files":[{"path":"/model.reqif","bytes":[]}],"error":"archive path"},
+  {"name":"windows_path","files":[{"path":"C:\\model.reqif","bytes":[]}],"error":"archive path"},
+  {"name":"empty_segment","files":[{"path":"a//model.reqif","bytes":[]}],"error":"archive path"},
+  {"name":"directory_alias","files":[{"path":"a","bytes":[]},{"path":"a/model.reqif","bytes":[]}],"error":"archive path"},
+  {"name":"duplicate_name","files":[{"path":"a.reqif","bytes":[1]},{"path":"b.reqif","bytes":[2]}],"rewrite":{"from":"b.reqif","to":"a.reqif"},"error":"archive path"},
+  {"name":"no_document","files":[{"path":"attachment.bin","bytes":[0,1]}],"error":"no .reqif"},
+  {"name":"entry_limit","files":[{"path":"model.reqif","bytes":[65],"repeat":16777217}],"error":"entry bytes"},
+  {"name":"aggregate_limit","files":[{"path":"a.reqif","bytes":[65],"repeat":12582912},{"path":"b.bin","bytes":[66],"repeat":12582912},{"path":"c.bin","bytes":[67],"repeat":12582912}],"error":"expanded bytes"},
+  {"name":"compressed_limit","raw_length":8388609,"error":"compressed bytes"},
+  {"name":"entry_count","entry_count":1025,"error":"entry count"},
+  {"name":"corrupt_crc","files":[{"path":"model.reqif","bytes":[1,2,3,4]}],"corrupt":true,"error":"checksum"},
+  {"name":"symlink","files":[{"path":"model.reqif","bytes":[],"symlink":"../outside"}],"error":"unsupported archive entry"},
+  {"name":"control_path","files":[{"path":"model\u0001.reqif","bytes":[]}],"error":"archive path"},
+  {"name":"dishonest_entry_size","files":[{"path":"model.reqif","bytes":[65],"repeat":16777217}],"declared_size":1,"error":"expanded bytes"},
+  {"name":"dishonest_aggregate_size","files":[{"path":"a.reqif","bytes":[65],"repeat":12582912},{"path":"b.bin","bytes":[66],"repeat":12582912},{"path":"c.bin","bytes":[67],"repeat":12582912}],"declared_size":1,"error":"unsupported archive entry"}
+]

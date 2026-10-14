@@ -615,3 +615,6 @@ mod tests {
         assert!(matches!(err, ReqIfAdapterError::Parse(_)));
     }
 }
+/// Bounded byte-preserving archive intake; semantic ReqIF validation is separate.
+#[cfg(feature = "reqif-archive")]
+pub mod archive;

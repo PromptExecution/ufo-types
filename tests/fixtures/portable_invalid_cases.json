@@ -1,0 +1,12 @@
+[
+  {"pointer": "/model/relations/verify-1/relation/verify/requirement", "value": "controller", "reason": "requirement endpoint"},
+  {"pointer": "/model/relations/satisfy-1/relation/satisfy/subject", "value": "absent", "reason": "missing endpoint"},
+  {"pointer": "/model/elements/controller/id", "value": "another-id", "reason": "mismatched identity"},
+  {"pointer": "/model/elements/controller/properties/matrix/multiplicity/upper", "value": 0, "reason": "upper multiplicity"},
+  {"pointer": "/model/elements/controller/properties/matrix/values", "value": [], "reason": "violate multiplicity"},
+  {"pointer": "/model/elements/controller/properties/observed/values/0/value", "value": "invalid timestamp", "reason": "declared type"},
+  {"pointer": "/model/elements/controller/properties/observed/values/0/kind", "value": "string", "reason": "declared type"},
+  {"pointer": "/model/relations/enter/authority", "value": "inferred", "reason": "no rule"},
+  {"pointer": "/model/relations/enter/authority", "value": "compiler_proven", "reason": "no source evidence"},
+  {"pointer": "/model/elements/controller/anchors/0/anchor/rust_span/line", "value": 0, "reason": "one-based"}
+]

@@ -129,6 +129,59 @@ platform, with git history preserved. It is consumed both inside `_b00t_`
 this small, dependency-light types crate without pulling in the full
 `_b00t_` monorepo (34 git submodules).
 
+## ReqIFz source intake
+
+The optional `reqif-archive` feature exposes
+`reqif::archive::ReqIfArchive::from_bytes` for bounded ReqIFz intake. It retains
+the original archive and non-directory entry bytes/order, with SHA-256 digest
+helpers. Limits are 8 MiB compressed, 16 MiB per entry, 32 MiB expanded, 1024
+entries and 1024-byte portable paths. It rejects duplicate names, file/directory
+aliases, unsafe paths, symlinks and CRC failures. Nested archives remain opaque
+attachments. A `.reqif` filename classifies a document without claiming valid
+XML: schema validation, typed mapping and edited export are still required.
+
+## Revision wire schemas
+
+Generate JSON Schema from the optional canonical revision contracts:
+
+```sh
+cargo run --quiet --features revision --example revision-schema -- bundle > bundle.schema.json
+cargo run --quiet --features revision --example revision-schema -- receipt > receipt.schema.json
+```
+
+The selector defaults to `bundle`. Other selectors are `model`, `changeset`,
+`conflict`, `merge`, `checkpoint`, `status`, `expected-head`, `fidelity` and
+`capabilities`, `query-request`, `query-response` and `graph-descriptor`.
+Each document includes its referenced definitions and can be
+used by browser validators or JSON Schema to TypeScript generators. Unknown
+selectors and extra arguments fail without emitting a schema. Pin the producer
+commit alongside generated browser artifacts; do not maintain independent wire
+enum definitions. Schema validation describes JSON structure; hydration and
+service authorization still enforce semantic and project invariants.
+
+Revision discovery uses `RevisionQueryRequest` and `RevisionQueryResponse`.
+Decode rejects unknown fields, duplicate keys and inconsistent response graph,
+project, revision, freshness or RDF term data. Call `validate_for(&request)` to
+check matching project/branch and exact-revision requirements. `Exact` never
+falls back. `Minimum` requires owner-proven accepted ancestry; `allow_older`
+permits an explicitly stale fallback below that minimum. `Current` permits a
+stale checkpoint only when requested. `Fresh` means the indexed revision equals
+the branch model revision sampled by the owner, so an exact historical answer
+can be `Stale` while meeting its selector. Unbound SELECT variables are omitted;
+empty literals, duplicate solutions, lexical values and row order survive.
+The evaluator adapter supplies actual projected variable names and the parsed
+query's result kind; column labels are opaque wire data, never SPARQL fragments.
+
+Wire ceilings are 64 KiB query text, 60 seconds relative deadline, 256 projected
+variables, 10,000 rows and 4 MiB serialized results. Services may enforce lower
+limits and must bound parsing, staging, concurrency and cancellation themselves.
+Graph descriptors bind the accepted candidate, projection schema, checkpoint
+and exact graph bytes; constructing one is not publication evidence. These pure
+types do not supply storage, an evaluator, authorization or revision ancestry.
+Checkpoint `dialect` is the opaque model dialect, such as `SysML-v2`, rather
+than the portable bundle format's `DIALECT` URI. Wire validation checks its
+identity and 1 KiB ceiling; the owner checks support and its project binding.
+
 ## References
 
 - Guizzardi, G. (2005). _Ontological Foundations for Structural Conceptual

@@ -1,0 +1,10 @@
+[
+  {"lexeme":"123456789012345678901234567890.12345678901234567890","valid":true},
+  {"lexeme":"1e10000","valid":true},
+  {"lexeme":"1e-10000","valid":true},
+  {"lexeme":"-0.0000","valid":true},
+  {"lexeme":"NaN","valid":false},
+  {"lexeme":"inf","valid":false},
+  {"lexeme":"","valid":false},
+  {"lexeme":"not a number","valid":false}
+]

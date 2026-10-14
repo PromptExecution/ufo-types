@@ -175,6 +175,8 @@ mod python;
 pub mod quantity;
 #[cfg(feature = "reqif")]
 pub mod reqif;
+#[cfg(feature = "revision")]
+pub mod revision;
 pub mod satisfies;
 #[cfg(feature = "statechart")]
 pub mod statechart;

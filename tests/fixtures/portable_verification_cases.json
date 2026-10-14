@@ -1,0 +1,32 @@
+{
+  "elements": {
+    "verification-def": {
+      "id": "verification-def",
+      "kind": "verification_case_definition",
+      "name": "Controller verification",
+      "properties": {},
+      "anchors": [],
+      "extensions": {}
+    },
+    "verification-日本語": {
+      "id": "verification-日本語",
+      "kind": "verification_case_usage",
+      "name": "Controller acceptance test",
+      "properties": {},
+      "anchors": [],
+      "extensions": {}
+    }
+  },
+  "relations": {
+    "native-verify": {
+      "id": "native-verify",
+      "relation": {
+        "verify": {"requirement": "REQ-日本語", "by": "verification-日本語"}
+      },
+      "authority": "authored",
+      "anchors": [],
+      "rule": null,
+      "extensions": {}
+    }
+  }
+}
